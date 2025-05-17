@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Monopoly</title>
+        <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .board-row {
+            display: flex;
+            width: 100%;
+            height: 100px;
+            margin-bottom: 2px;
+        }
+        
+        .space {
+            flex: 1;
+            height: 100%;
+            margin-right: 2px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            padding: 8px 4px;
+            background-color: #2196F3;
+            color: white;
+            font-weight: bold;
+            border-radius: 0;
+            overflow: hidden;
+        }
+        
+        .game-controls {
+            margin-top: 20px;
+            text-align: center;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            background-color: #1976D2;
+        }
+
+        .player-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .dice {
+            font-size: 40px;
+            margin: 10px;
+        }
+
+        #gameMessage {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        
+        .space {
+            flex: 1;
+            height: 100%;
+            margin-right: 2px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            padding: 8px 4px;
+            background-color: #2196F3; /* Default blue */
+            color: white;
+            font-weight: bold;
+            border-radius: 0;
+            overflow: hidden;
+        }
+        
+        .space:last-child {
+            margin-right: 0;
+        }
+        
+        .element-symbol {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .element-name {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .price {
+            font-size: 12px;
+            background-color: rgba(255, 255, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .corner {
+            background-color: #795548; /* Brown for special spaces */
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+        }
+        
+        .experiment {
+            background-color: #795548;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .experiment-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .reaction {
+            background-color: #795548;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .reaction-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .start {
+            background-color: #795548;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-title {
+            margin: 20px 0;
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tokens {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .token {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #333;
+            border-radius: 50%;
+            margin: 5px;
+            font-size: 1.8em;
+            background-color: white;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-types {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        
+        .card {
+            width: 150px;
+            height: 200px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .reaction-card {
+            background-color: #795548;
+            color: white;
+        }
+        
+        .experiment-card {
+            background-color: #795548;
+            color: white;
+        } 
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">CHEMICAL MONOPOLY</h1>
+        
+        <!-- Kontrol permainan -->
+        <div class="game-controls">
+            <button class="button" id="startGame">Mulai Permainan</button>
+            <button class="button" id="rollDice">Lempar Dadu</button>
+            <div class="dice" id="diceResult">🎲 🎲</div>
+        </div>
+
+        <!-- Info pemain -->
+        <div class="player-info" id="playerInfo">
+            <h3>Info Pemain</h3>
+            <div id="currentPlayer">Pemain: -</div>
+            <div id="atomCoins">AtomCoin: 0 ⚛️</div>
+            <div id="ownedElements">Unsur dimiliki: -</div>
+        </div>
+
+        <!-- Pesan permainan -->
+        <div id="gameMessage"></div>
+
+        <!-- Top Row -->
+        <div class="board-row">
+            <div class="space corner">
+                <div>Kontaminasi</div>
+            </div>
+            <div class="space" style="background-color: #2196F3;">
+                <div class="element-symbol">F</div>
+                <div class="element-name">Fluorin</div>
+                <div class="price">350 ⚛️</div>
+            </div>
+            <div class="space" style="background-color: #2196F3;">
+                <div class="element-symbol">Cl</div>
+                <div class="element-name">Klorin</div>
+                <div class="price">350 ⚛️</div>
+            </div>
+            <div class="space experiment">
+                <div class="experiment-icon">🧪</div>
+                <div>Eksperimen Gratis</div>
+            </div>
+            <div class="space" style="background-color: #2196F3;">
+                <div class="element-symbol">Br</div>
+                <div class="element-name">Bromin</div>
+                <div class="price">380 ⚛️</div>
+            </div>
+            <div class="space" style="background-color: #2196F3;">
+                <div class="element-symbol">I</div>
+                <div class="element-name">Iodin</div>
+                <div class="price">400 ⚛️</div>
+            </div>
+            <div class="space reaction">
+                <div class="reaction-icon">?</div>
+                <div>Reaksi Kimia</div>
+            </div>
+            <div class="space" style="background-color: #2196F3;">
+                <div class="element-symbol">At</div>
+                <div class="element-name">Astatin</div>
+                <div class="price">420 ⚛️</div>
+            </div>
+            <div class="space" style="background-color: #2196F3;">
+                <div class="element-symbol">Ts</div>
+                <div class="element-name">Tenesin</div>
+                <div class="price">450 ⚛️</div>
+            </div>
+            <div class="space start">
+                <div>Start</div>
+                <div>Laboratorium Pusat</div>
+                <div class="price">+100 ⚛️</div>
+            </div>
+        </div>
+        
+        <!-- Second Row -->
+        <div class="board-row">
+            <div class="space" style="background-color: #FF5722;"> <!-- Orange for Alkali Metals -->
+                <div class="element-symbol">Fr</div>
+                <div class="element-name">Fransium</div>
+                <div class="price">380 ⚛️</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="background-color: #4CAF50;"> <!-- Green for Noble Gases -->
+                <div class="element-symbol">He</div>
+                <div class="element-name">Helium</div>
+                <div class="price">260 ⚛️</div>
+            </div>
+        </div>
+        
+        <!-- Third Row -->
+        <div class="board-row">
+            <div class="space" style="background-color: #FF5722;">
+                <div class="element-symbol">Cs</div>
+                <div class="element-name">Cesium</div>
+                <div class="price">360 ⚛️</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="background-color: #4CAF50;">
+                <div class="element-symbol">Ne</div>
+                <div class="element-name">Neon</div>
+                <div class="price">260 ⚛️</div>
+            </div>
+        </div>
+        
+        <!-- Fourth Row -->
+        <div class="board-row">
+            <div class="space reaction" style="background-color: #795548;">
+                <div class="reaction-icon">?</div>
+                <div>Reaksi Kimia</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space experiment" style="background-color: #795548;">
+                <div class="experiment-icon">🧪</div>
+                <div>Eksperimen Gratis</div>
+            </div>
+        </div>
+        
+        <!-- Fifth Row -->
+        <div class="board-row">
+            <div class="space" style="background-color: #FF5722;">
+                <div class="element-symbol">Rb</div>
+                <div class="element-name">Rubidium</div>
+                <div class="price">340 ⚛️</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="background-color: #4CAF50;">
+                <div class="element-symbol">Ar</div>
+                <div class="element-name">Argon</div>
+                <div class="price">280 ⚛️</div>
+            </div>
+        </div>
+        
+        <!-- Sixth Row -->
+        <div class="board-row">
+            <div class="space" style="background-color: #FF5722;">
+                <div class="element-symbol">Li</div>
+                <div class="element-name">Litium</div>
+                <div class="price">320 ⚛️</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="background-color: #4CAF50;">
+                <div class="element-symbol">Kr</div>
+                <div class="element-name">Kripton</div>
+                <div class="price">300 ⚛️</div>
+            </div>
+        </div>
+        
+        <!-- Seventh Row -->
+        <div class="board-row">
+            <div class="space experiment" style="background-color: #795548;">
+                <div class="experiment-icon">🧪</div>
+                <div>Eksperimen Gratis</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space reaction" style="background-color: #795548;">
+                <div class="reaction-icon">?</div>
+                <div>Reaksi Kimia</div>
+            </div>
+        </div>
+        
+        <!-- Eighth Row -->
+        <div class="board-row">
+            <div class="space" style="background-color: #FF5722;">
+                <div class="element-symbol">K</div>
+                <div class="element-name">Kalium</div>
+                <div class="price">300 ⚛️</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="background-color: #4CAF50;">
+                <div class="element-symbol">Xe</div>
+                <div class="element-name">Xenon</div>
+                <div class="price">320 ⚛️</div>
+            </div>
+        </div>
+        
+        <!-- Ninth Row -->
+        <div class="board-row">
+            <div class="space" style="background-color: #FF5722;">
+                <div class="element-symbol">Na</div>
+                <div class="element-name">Natrium</div>
+                <div class="price">280 ⚛️</div>
+            </div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="visibility: hidden;"></div>
+            <div class="space" style="background-color: #4CAF50;">
+                <div class="element-symbol">Rn</div>
+                <div class="element-name">Radon</div>
+                <div class="price">340 ⚛️</div>
+            </div>
+        </div>
+        
+        <!-- Bottom Row -->
+        <div class="board-row">
+            <div class="space corner">
+                <div>Reaksi Kimia</div>
+            </div>
+            <div class="space" style="background-color: #FFC107;"> <!-- Amber for Alkaline Earth -->
+                <div class="element-symbol">Be</div>
+                <div class="element-name">Berilium</div>
+                <div class="price">260 ⚛️</div>
+            </div>
+            <div class="space" style="background-color: #FFC107;">
+                <div class="element-symbol">Ra</div>
+                <div class="element-name">Radium</div>
+                <div class="price">260 ⚛️</div>
+            </div>
+            <div class="space experiment">
+                <div class="experiment-icon">🧪</div>
+                <div>Eksperimen Gratis</div>
+            </div>
+            <div class="space" style="background-color: #FFC107;">
+                <div class="element-symbol">Ba</div>
+                <div class="element-name">Barium</div>
+                <div class="price">240 ⚛️</div>
+            </div>
+            <div class="space" style="background-color: #FFC107;">
+                <div class="element-symbol">Sr</div>
+                <div class="element-name">Stronsium</div>
+                <div class="price">240 ⚛️</div>
+            </div>
+            <div class="space reaction">
+                <div class="reaction-icon">?</div>
+                <div>Reaksi Kimia</div>
+            </div>
+            <div class="space" style="background-color: #FFC107;">
+                <div class="element-symbol">Ca</div>
+                <div class="element-name">Kalsium</div>
+                <div class="price">220 ⚛️</div>
+            </div>
+            <div class="space" style="background-color: #FFC107;">
+                <div class="element-symbol">Mg</div>
+                <div class="element-name">Magnesium</div>
+                <div class="price">220 ⚛️</div>
+            </div>
+            <div class="space corner">
+                <div>Kontaminasi</div>
+            </div>
+        </div>
+        <!-- Tokens -->
+        <div class="tokens">
+            <div class="token" style="background-color: #ffd700;">⚗️</div>
+            <div class="token" style="background-color: #c0c0c0;">🧪</div>
+            <div class="token" style="background-color: #b87333;">🔬</div>
+            <div class="token" style="background-color: #e6e6fa;">⚛️</div>
+        </div>
+    <script>
+         document.addEventListener('DOMContentLoaded', function() {
+            let game = null;
+            let currentPlayerIndex = 0;
+            const players = [];
+
+            // Fungsi untuk memulai permainan
+            document.getElementById('startGame').addEventListener('click', function() {
+                game = new MonopoliKimia();
+                players.push(game.tambahPemain("Pemain 1"));
+                players.push(game.tambahPemain("Pemain 2"));
+                updatePlayerInfo();
+                showMessage("Permainan dimulai! Giliran Pemain 1");
+            });
+
+            // Fungsi untuk melempar dadu
+            document.getElementById('rollDice').addEventListener('click', function() {
+                if (!game) {
+                    showMessage("Silakan mulai permainan terlebih dahulu!");
+                    return;
+                }
+
+                const diceResults = game.lemparDadu();
+                document.getElementById('diceResult').textContent = 
+                    `🎲 ${diceResults[0]} 🎲 ${diceResults[1]}`;
+                
+                const moveResult = game.gerakkanPemain();
+                processMoveResult(moveResult);
+            });
+
+            function showMessage(message) {
+                document.getElementById('gameMessage').textContent = message;
+            }
+
+            function updatePlayerInfo() {
+                if (!game) return;
+                const player = game.pemain[currentPlayerIndex];
+                document.getElementById('currentPlayer').textContent = 
+                    `Pemain: ${player.nama}`;
+                document.getElementById('atomCoins').textContent = 
+                    `AtomCoin: ${player.atomCoin} ⚛️`;
+                document.getElementById('ownedElements').textContent = 
+                    `Unsur dimiliki: ${player.unsurDimiliki.join(', ') || 'Tidak ada'}`;
+            }
+
+            function processMoveResult(result) {
+                if (result.status === "melewati_start") {
+                    showMessage(`Mendapatkan ${result.bonus}⚛️ karena melewati Start!`);
+                }
+                const aksi = game.prosesAksiPetak();
+                handlePetakAction(aksi);
+                updatePlayerInfo();
+            }
+
+            function handlePetakAction(aksi) {
+                switch(aksi.aksi) {
+                    case "bisa_beli":
+                        showMessage(`Anda bisa membeli ${aksi.petak.nama} dengan harga ${aksi.detail.harga}⚛️`);
+                        break;
+                    case "bayar_sewa":
+                        showMessage(`Anda harus membayar sewa ${aksi.detail.sewa}⚛️ kepada ${aksi.detail.pemilik}`);
+                        break;
+                    case "kartu_reaksi_kimia":
+                        showMessage(aksi.detail.deskripsi);
+                        break;
+                }
+            }
+        });
+
+        // Data struktur untuk unsur-unsur
+        const elements = {
+            // Alkali
+            "Li": { name: "Lithium", group: "alkali", price: 100, rent: 50 },
+            "Na": { name: "Natrium", group: "alkali", price: 120, rent: 60 },
+            "K": { name: "Kalium", group: "alkali", price: 140, rent: 70 },
+            "Rb": { name: "Rubidium", group: "alkali", price: 160, rent: 80 },
+            "Cs": { name: "Cesium", group: "alkali", price: 180, rent: 90 },
+            "Fr": { name: "Fransium", group: "alkali", price: 200, rent: 100 },
+            "H": { name: "Hidrogen", group: "alkali", price: 220, rent: 110 },
+            
+            // Alkali Tanah
+            "Be": { name: "Berilium", group: "earth-alkali", price: 220, rent: 110 },
+            "Mg": { name: "Magnesium", group: "earth-alkali", price: 240, rent: 120 },
+            "Ca": { name: "Kalsium", group: "earth-alkali", price: 260, rent: 130 },
+            "Sr": { name: "Stronsium", group: "earth-alkali", price: 280, rent: 140 },
+            "Ba": { name: "Barium", group: "earth-alkali", price: 300, rent: 150 },
+            "Ra": { name: "Radium", group: "earth-alkali", price: 320, rent: 160 },
+            
+            // Halogen
+            "F": { name: "Fluorin", group: "halogen", price: 350, rent: 175 },
+            "Cl": { name: "Klorin", group: "halogen", price: 350, rent: 175 },
+            "Br": { name: "Bromin", group: "halogen", price: 380, rent: 190 },
+            "I": { name: "Iodin", group: "halogen", price: 400, rent: 200 },
+            "At": { name: "Astatin", group: "halogen", price: 420, rent: 210 },
+            "Ts": { name: "Tenesin", group: "halogen", price: 450, rent: 225 },
+            
+            // Gas Mulia
+            "He": { name: "Helium", group: "noble-gas", price: 500, rent: 250 },
+            "Ne": { name: "Neon", group: "noble-gas", price: 500, rent: 250 },
+            "Ar": { name: "Argon", group: "noble-gas", price: 550, rent: 275 },
+            "Kr": { name: "Kripton", group: "noble-gas", price: 550, rent: 275 },
+            "Xe": { name: "Xenon", group: "noble-gas", price: 600, rent: 300 },
+            "Rn": { name: "Radon", group: "noble-gas", price: 650, rent: 325 }
+        };
+
+        // Kartu Reaksi Kimia
+        const reactionCards = [
+            "Natrium bereaksi dengan air! Jika punya H₂O, bayar 30⚛️ untuk pemadaman.",
+            "Klorin terlepas ke udara! Bayar 50⚛️ untuk penanganan.",
+            "Terjadi reaksi redoks! Bergerak maju 3 langkah.",
+            "Ledakan kecil di lab! Mundur 2 langkah.",
+            "Isotop radioaktif terdeteksi! Lewatkan giliran berikutnya.",
+            "Ditemukan katalis baru! Lakukan 2 giliran berikutnya.",
+            "Terpapar radiasi! Pergi ke Kontaminasi.",
+            "Reaksi endotermik! Bayar 25⚛️ untuk energi tambahan.",
+            "Reaksi eksotermik! Terima 25⚛️ dari bank.",
+            "Kestabilan elektron terganggu! Bayar 40⚛️ untuk stabilisasi.",
+            "Ikatan kovalen rusak! Bayar 35⚛️ untuk perbaikan.",
+            "Ikatan ionik terbentuk! Dapatkan 45⚛️.",
+            "Terjadi polimerisasi! Jika memiliki unsur Karbon, dapatkan 50⚛️.",
+            "Anomali kuantum! Pilih posisi baru di papan.",
+            "Tekanan meningkat! Mundur ke posisi start.",
+            "Korosi terdeteksi! Bayar 20⚛️ per unsur yang kamu miliki.",
+            "Pengayaan uranium! Terima 100⚛️ tapi lewati 1 giliran.",
+            "Error pengukuran! Lempar dadu sekali lagi.",
+            "Penemuan senyawa baru! Dapatkan 60⚛️.",
+            "Reaksi berantai! Bergerak maju sejumlah unsur yang kamu miliki."
+        ];
+
+        // Kartu Eksperimen
+        const experimentCards = [
+            "Buat senyawa NaCl! Jika punya Na dan Cl, dapatkan 80⚛️.",
+            "Buat air (H₂O)! Jika punya H, dapatkan 60⚛️.",
+            "Festival sains sekolah! Terima 50⚛️ dari setiap pemain.",
+            "Hibah penelitian! Dapatkan 100⚛️.",
+            "Publikasi jurnal! Dapatkan 75⚛️.",
+            "Konferensi kimia! Dapatkan 25⚛️ per golongan unsur yang kamu miliki.",
+            "Renovasi laboratorium! Bayar 50⚛️.",
+            "Upgrade peralatan! Bayar 40⚛️.",
+            "Paten diterima! Terima 150⚛️.",
+            "Pencemaran laboratorium! Bayar 30⚛️ untuk pembersihan.",
+            "Kunjungan siswa! Dapatkan 5⚛️ per unsur yang kamu miliki.",
+            "Alokasi anggaran penelitian! Dapatkan 200⚛️.",
+            "Colaborasi penelitian! Pilih pemain lain, kalian berdua dapatkan 25⚛️.",
+            "Zat kimia kadaluarsa! Bayar 15⚛️ per unsur.",
+            "Penemuan penggunaan baru! Dapatkan 35⚛️ per golongan unsur.",
+            "Kerusakan peralatan! Bayar 45⚛️.",
+            "Mentor pensiun! Dapatkan properti gratis dari bank.",
+            "Kesalahan laboratorium! Bayar 55⚛️.",
+            "Terobosan penelitian! Naik tingkatan pada satu unsur milikmu.",
+            "Demonstrasi berhasil! Dapatkan 70⚛️."
+        ];
+
+        // Token data (untuk implementasi selanjutnya)
+        const tokens = [
+            { name: "Labu Erlenmeyer", class: "token-erlenmeyer" },
+            { name: "Mikroskop", class: "token-microscope" },
+            { name: "Atom", class: "token-atom" },
+            { name: "Tabung Reaksi", class: "token-tube" }
+        ];
+
+        // Sistem Monopoli Kimia
+// Mengatur pergerakan pemain, kepemilikan unsur, dan transaksi
+
+class MonopoliKimia {
+  constructor() {
+    // Inisialisasi papan permainan dengan unsur-unsur kimia
+    this.papan = this.inisialisasiPapan();
+    this.pemain = [];
+    this.pemainSaatIni = 0;
+    this.dadu = [0, 0];
+    this.soalStoikiometriAktif = true; // Aktifkan soal stoikiometri
+    this.senyawaTerbentuk = []; // Simpan senyawa yang sudah terbentuk
+  }
+
+  // Inisialisasi papan permainan dengan unsur-unsur kimia
+  inisialisasiPapan() {
+    return [
+      { id: 0, nama: "Start", tipe: "start" },
+      { id: 1, nama: "Natrium (Na)", tipe: "unsur", golongan: "Alkali", harga: 100, sewa: 50, pemilik: null },
+      { id: 2, nama: "Kalium (K)", tipe: "unsur", golongan: "Alkali", harga: 100, sewa: 50, pemilik: null },
+      { id: 3, nama: "Litium (Li)", tipe: "unsur", golongan: "Alkali", harga: 100, sewa: 50, pemilik: null },
+      { id: 4, nama: "Laboratorium Kimia", tipe: "lab" },
+      { id: 5, nama: "Helium (He)", tipe: "unsur", golongan: "Gas Mulia", harga: 150, sewa: 20, pemilik: null },
+      { id: 6, nama: "Neon (Ne)", tipe: "unsur", golongan: "Gas Mulia", harga: 150, sewa: 20, pemilik: null },
+      { id: 7, nama: "Argon (Ar)", tipe: "unsur", golongan: "Gas Mulia", harga: 150, sewa: 20, pemilik: null },
+      { id: 8, nama: "Reaksi Kimia", tipe: "reaksi_kimia" },
+      { id: 9, nama: "Kalsium (Ca)", tipe: "unsur", golongan: "Alkali Tanah", harga: 120, sewa: 40, pemilik: null },
+      { id: 10, nama: "Magnesium (Mg)", tipe: "unsur", golongan: "Alkali Tanah", harga: 120, sewa: 40, pemilik: null },
+      { id: 11, nama: "Berilium (Be)", tipe: "unsur", golongan: "Alkali Tanah", harga: 120, sewa: 40, pemilik: null },
+      { id: 12, nama: "Penjara", tipe: "penjara" },
+      { id: 13, nama: "Fluor (F)", tipe: "unsur", golongan: "Halogen", harga: 130, sewa: 45, pemilik: null },
+      { id: 14, nama: "Klor (Cl)", tipe: "unsur", golongan: "Halogen", harga: 130, sewa: 45, pemilik: null },
+      { id: 15, nama: "Brom (Br)", tipe: "unsur", golongan: "Halogen", harga: 130, sewa: 45, pemilik: null },
+      { id: 16, nama: "Hidrogen (H)", tipe: "unsur", golongan: "Hidrogen", harga: 90, sewa: 35, pemilik: null },
+      { id: 17, nama: "Oksigen (O)", tipe: "unsur", golongan: "Oksigen", harga: 110, sewa: 40, pemilik: null },
+      { id: 18, nama: "Inspeksi Laboratorium", tipe: "inspeksi" }
+    ];
+  }
+
+  // Menambahkan pemain baru
+  tambahPemain(nama) {
+    this.pemain.push({
+      id: this.pemain.length,
+      nama: nama,
+      posisi: 0,
+      atomCoin: 500, // Saldo awal
+      unsurDimiliki: [],
+      labMini: [],
+      dipenjara: false,
+      senyawaTerbentuk: [] // Simpan senyawa yang sudah dibuat oleh pemain
+    });
+    return this.pemain.length - 1; // Mengembalikan ID pemain
+  }
+
+  // Melempar dadu
+  lemparDadu() {
+    this.dadu = [
+      Math.floor(Math.random() * 6) + 1,
+      Math.floor(Math.random() * 6) + 1
+    ];
+    return this.dadu;
+  }
+
+  // Memindahkan pemain sesuai hasil dadu
+  gerakkanPemain() {
+    const pemain = this.pemain[this.pemainSaatIni];
+    const totalLangkah = this.dadu[0] + this.dadu[1];
+    const posisiLama = pemain.posisi;
+    
+    // Gerakkan pemain
+    pemain.posisi = (pemain.posisi + totalLangkah) % this.papan.length;
+    
+    // Cek apakah melewati start
+    if (pemain.posisi < posisiLama) {
+      pemain.atomCoin += 200; // Tambah 200 atom coin jika melewati start
+      return {
+        status: "melewati_start",
+        posisiBaru: pemain.posisi,
+        petak: this.papan[pemain.posisi],
+        bonus: 200
+      };
+    }
+    
+    return {
+      status: "bergerak",
+      posisiBaru: pemain.posisi,
+      petak: this.papan[pemain.posisi]
+    };
+  }
+
+  // Proses aksi setelah pemain mendarat di petak tertentu
+  prosesAksiPetak() {
+    const pemain = this.pemain[this.pemainSaatIni];
+    const petak = this.papan[pemain.posisi];
+    
+    let hasil = {
+      petak: petak,
+      aksi: null,
+      detail: null
+    };
+    
+    // Pemain mendarat di petak unsur
+    if (petak.tipe === "unsur") {
+      // Petak belum dimiliki siapapun
+      if (petak.pemilik === null) {
+        hasil.aksi = "bisa_beli";
+        hasil.detail = {
+          harga: petak.harga
+        };
+      } 
+      // Petak dimiliki pemain lain
+      else if (petak.pemilik !== pemain.id) {
+        hasil.aksi = "bayar_sewa";
+        hasil.detail = {
+          pemilik: this.pemain[petak.pemilik].nama,
+          sewa: petak.sewa
+        };
+      }
+      // Petak dimiliki pemain sendiri
+      else {
+        hasil.aksi = "milik_sendiri";
+      }
+    }
+    // Mendarat di petak reaksi kimia
+    else if (petak.tipe === "reaksi_kimia") {
+      const kartuReaksi = this.ambilKartuReaksiKimia();
+      hasil.aksi = "kartu_reaksi_kimia";
+      hasil.detail = kartuReaksi;
+      
+      // Terapkan efek kartu
+      this.terapkanEfekKartuReaksi(kartuReaksi);
+    }
+    // Aksi untuk petak khusus lainnya bisa ditambahkan di sini
+    else if (petak.tipe === "lab") {
+      hasil.aksi = "kunjungi_lab";
+    }
+    else if (petak.tipe === "penjara") {
+      hasil.aksi = "kunjungi_penjara";
+    }
+    else if (petak.tipe === "inspeksi") {
+      hasil.aksi = "inspeksi";
+    }
+    
+    return hasil;
+  }
+  
+  // Ambil kartu reaksi kimia
+  ambilKartuReaksiKimia() {
+    // Daftar kartu reaksi kimia
+    const kartuReaksi = [
+      {
+        id: 1,
+        deskripsi: "Klorin bereaksi dengan hidrogen! Jika punya H₂, dapatkan 50⚛️.",
+        tipe: "bonus_bersyarat",
+        unsurSyarat: "H",
+        bonus: 50
+      },
+      {
+        id: 2,
+        deskripsi: "Kebocoran gas alkali! Bayar 40⚛️ untuk membersihkan.",
+        tipe: "denda",
+        nilai: 40
+      },
+      {
+        id: 3,
+        deskripsi: "Reaksi eksotermik! Dapatkan 30⚛️ dari panas yang dihasilkan.",
+        tipe: "bonus",
+        nilai: 30
+      },
+      {
+        id: 4,
+        deskripsi: "Reaksi oksidasi logam! Jika punya logam Alkali, bayar 25⚛️ untuk membersihkan karat.",
+        tipe: "denda_bersyarat",
+        golonganSyarat: "Alkali",
+        denda: 25
+      },
+      {
+        id: 5,
+        deskripsi: "Reaksi kimia berhasil! Maju 3 langkah.",
+        tipe: "gerakan",
+        langkah: 3
+      },
+      {
+        id: 6,
+        deskripsi: "Ledakan laboratorium! Mundur 2 langkah.",
+        tipe: "gerakan",
+        langkah: -2
+      },
+      {
+        id: 7,
+        deskripsi: "Penemuan gas mulia baru! Jika punya Gas Mulia, dapatkan 45⚛️.",
+        tipe: "bonus_bersyarat",
+        golonganSyarat: "Gas Mulia",
+        bonus: 45
+      },
+      {
+        id: 8,
+        deskripsi: "Oksigen bereaksi dengan besi! Jika punya Fe, bayar 30⚛️ untuk antioksidan.",
+        tipe: "denda_bersyarat",
+        unsurSyarat: "Fe",
+        denda: 30
+      }
+    ];
+    
+    // Pilih kartu secara acak
+    const indexKartu = Math.floor(Math.random() * kartuReaksi.length);
+    return kartuReaksi[indexKartu];
+  }
+  
+  // Terapkan efek kartu reaksi kimia
+  terapkanEfekKartuReaksi(kartu) {
+    const pemain = this.pemain[this.pemainSaatIni];
+    let hasil = {
+      sukses: true,
+      pesan: kartu.deskripsi,
+      efek: null
+    };
+    
+    switch (kartu.tipe) {
+      case "bonus":
+        // Bonus langsung
+        pemain.atomCoin += kartu.nilai;
+        hasil.efek = `Mendapatkan ${kartu.nilai}⚛️`;
+        break;
+        
+      case "denda":
+        // Denda langsung
+        if (pemain.atomCoin >= kartu.nilai) {
+          pemain.atomCoin -= kartu.nilai;
+          hasil.efek = `Membayar ${kartu.nilai}⚛️`;
+        } else {
+          // Pemain tidak cukup uang, bangkrut atau utang
+          hasil.sukses = false;
+          hasil.efek = "Tidak cukup Atom Coin untuk membayar denda!";
+        }
+        break;
+        
+      case "bonus_bersyarat":
+        // Bonus jika memiliki unsur/golongan tertentu
+        let memilikiSyarat = false;
+        
+        if (kartu.unsurSyarat) {
+          // Cek kepemilikan unsur tertentu
+          for (let petak of this.papan) {
+            if (petak.tipe === "unsur" && petak.nama.includes(kartu.unsurSyarat) && petak.pemilik === pemain.id) {
+              memilikiSyarat = true;
+              break;
+            }
+          }
+        } else if (kartu.golonganSyarat) {
+          // Cek kepemilikan golongan tertentu
+          for (let petak of this.papan) {
+            if (petak.tipe === "unsur" && petak.golongan === kartu.golonganSyarat && petak.pemilik === pemain.id) {
+              memilikiSyarat = true;
+              break;
+            }
+          }
+        }
+        
+        if (memilikiSyarat) {
+          pemain.atomCoin += kartu.bonus;
+          hasil.efek = `Syarat terpenuhi! Mendapatkan ${kartu.bonus}⚛️`;
+        } else {
+          hasil.efek = "Syarat tidak terpenuhi, tidak mendapatkan bonus.";
+        }
+        break;
+        
+      case "denda_bersyarat":
+        // Denda jika memiliki unsur/golongan tertentu
+        let kenakanDenda = false;
+        
+        if (kartu.unsurSyarat) {
+          // Cek kepemilikan unsur tertentu
+          for (let petak of this.papan) {
+            if (petak.tipe === "unsur" && petak.nama.includes(kartu.unsurSyarat) && petak.pemilik === pemain.id) {
+              kenakanDenda = true;
+              break;
+            }
+          }
+        } else if (kartu.golonganSyarat) {
+          // Cek kepemilikan golongan tertentu
+          for (let petak of this.papan) {
+            if (petak.tipe === "unsur" && petak.golongan === kartu.golonganSyarat && petak.pemilik === pemain.id) {
+              kenakanDenda = true;
+              break;
+            }
+          }
+        }
+        
+        if (kenakanDenda) {
+          if (pemain.atomCoin >= kartu.denda) {
+            pemain.atomCoin -= kartu.denda;
+            hasil.efek = `Syarat terpenuhi, harus membayar ${kartu.denda}⚛️`;
+          } else {
+            hasil.sukses = false;
+            hasil.efek = "Tidak cukup Atom Coin untuk membayar denda!";
+          }
+        } else {
+          hasil.efek = "Syarat tidak terpenuhi, tidak perlu membayar denda.";
+        }
+        break;
+        
+      case "gerakan":
+        // Gerakan maju atau mundur
+        let posisiBaru = (pemain.posisi + kartu.langkah) % this.papan.length;
+        if (posisiBaru < 0) posisiBaru += this.papan.length; // Untuk gerakan mundur
+        
+        pemain.posisi = posisiBaru;
+        
+        if (kartu.langkah > 0) {
+          hasil.efek = `Bergerak maju ${kartu.langkah} langkah ke ${this.papan[posisiBaru].nama}`;
+        } else {
+          hasil.efek = `Bergerak mundur ${Math.abs(kartu.langkah)} langkah ke ${this.papan[posisiBaru].nama}`;
+        }
+        break;
+    }
+    
+    return hasil;
+  }
+  
+  // Membentuk senyawa dari unsur-unsur yang dimiliki
+  bentukSenyawa(unsurId1, unsurId2) {
+    const pemain = this.pemain[this.pemainSaatIni];
+    
+    // Cek apakah pemain memiliki kedua unsur
+    const memilikUnsur1 = this.papan[unsurId1].pemilik === pemain.id;
+    const memilikUnsur2 = this.papan[unsurId2].pemilik === pemain.id;
+    
+    if (!memilikUnsur1 || !memilikUnsur2) {
+      return {
+        sukses: false,
+        pesan: "Anda tidak memiliki salah satu atau kedua unsur tersebut!"
+      };
+    }
+    
+    const unsur1 = this.papan[unsurId1];
+    const unsur2 = this.papan[unsurId2];
+    
+    // Cek apakah kedua unsur dapat membentuk senyawa
+    const senyawa = this.cekSenyawa(unsur1, unsur2);
+    
+    if (!senyawa) {
+      return {
+        sukses: false,
+        pesan: `${unsur1.nama} dan ${unsur2.nama} tidak dapat membentuk senyawa yang dikenal dalam permainan ini.`
+      };
+    }
+    
+    // Berikan bonus sesuai senyawa yang terbentuk
+    pemain.atomCoin += senyawa.bonus;
+    
+    return {
+      sukses: true,
+      pesan: `Berhasil membentuk senyawa ${senyawa.nama}!`,
+      senyawa: senyawa.nama,
+      bonus: senyawa.bonus
+    };
+  }
+  
+  // Cek apakah dua unsur dapat membentuk senyawa
+  cekSenyawa(unsur1, unsur2) {
+    // Daftar senyawa yang dapat dibentuk
+    const daftarSenyawa = [
+      {
+        unsur1: "Na",
+        unsur2: "Cl",
+        nama: "NaCl",
+        bonus: 80, // Garam penting
+        deskripsi: "Natrium klorida (garam dapur)"
+      },
+      {
+        unsur1: "H",
+        unsur2: "O",
+        nama: "H₂O",
+        bonus: 60, // Untuk kehidupan
+        deskripsi: "Air (H₂O)"
+      },
+      {
+        unsur1: "H",
+        unsur2: "Cl",
+        nama: "HCl",
+        bonus: 70,
+        deskripsi: "Asam klorida"
+      },
+      {
+        unsur1: "K",
+        unsur2: "Cl",
+        nama: "KCl",
+        bonus: 75,
+        deskripsi: "Kalium klorida"
+      },
+      {
+        unsur1: "Li",
+        unsur2: "F",
+        nama: "LiF",
+        bonus: 65,
+        deskripsi: "Litium fluorida"
+      },
+      {
+        unsur1: "Ca",
+        unsur2: "O",
+        nama: "CaO",
+        bonus: 55,
+        deskripsi: "Kalsium oksida"
+      },
+      {
+        unsur1: "Mg",
+        unsur2: "O",
+        nama: "MgO",
+        bonus: 50,
+        deskripsi: "Magnesium oksida"
+      }
+    ];
+    
+    // Ekstrak simbol unsur dari nama
+    const getSimbol = (nama) => {
+      const match = nama.match(/\(([^)]+)\)/);
+      return match ? match[1] : null;
+    };
+    
+    const simbol1 = getSimbol(unsur1.nama);
+    const simbol2 = getSimbol(unsur2.nama);
+    
+    if (!simbol1 || !simbol2) return null;
+    
+    // Cek apakah kombinasi unsur ada dalam daftar senyawa
+    for (let senyawa of daftarSenyawa) {
+      if ((senyawa.unsur1 === simbol1 && senyawa.unsur2 === simbol2) || 
+          (senyawa.unsur1 === simbol2 && senyawa.unsur2 === simbol1)) {
+        return senyawa;
+      }
+    }
+    
+    return null;
+  }
+
+  // Pemain membeli unsur
+  beliUnsur() {
+    const pemain = this.pemain[this.pemainSaatIni];
+    const petak = this.papan[pemain.posisi];
+    
+    // Cek apakah petak adalah unsur dan belum dimiliki
+    if (petak.tipe !== "unsur" || petak.pemilik !== null) {
+      return {
+        sukses: false,
+        pesan: "Petak ini tidak dapat dibeli"
+      };
+    }
+    
+    // Cek apakah pemain punya cukup uang
+    if (pemain.atomCoin < petak.harga) {
+      return {
+        sukses: false,
+        pesan: "Atom Coin tidak cukup"
+      };
+    }
+    
+    // Beli unsur
+    pemain.atomCoin -= petak.harga;
+    petak.pemilik = pemain.id;
+    pemain.unsurDimiliki.push(petak.id);
+    
+    // Cek apakah pemain bisa membangun lab mini
+    const bisa_lab = this.cekLabMini(pemain.id, petak.golongan);
+    
+    return {
+      sukses: true,
+      pesan: `Berhasil membeli ${petak.nama}`,
+      bisaLabMini: bisa_lab,
+      golongan: petak.golongan
+    };
+  }
+
+  // Pemain membayar sewa
+  bayarSewa() {
+    const pemain = this.pemain[this.pemainSaatIni];
+    const petak = this.papan[pemain.posisi];
+    
+    // Cek apakah petak adalah unsur dan dimiliki pemain lain
+    if (petak.tipe !== "unsur" || petak.pemilik === null || petak.pemilik === pemain.id) {
+      return {
+        sukses: false,
+        pesan: "Tidak perlu membayar sewa"
+      };
+    }
+    
+    const pemilik = this.pemain[petak.pemilik];
+    
+    // Cek apakah pemain punya cukup uang
+    if (pemain.atomCoin < petak.sewa) {
+      return {
+        sukses: false,
+        pesan: "Atom Coin tidak cukup, pemain bangkrut"
+      };
+    }
+    
+    // Bayar sewa
+    pemain.atomCoin -= petak.sewa;
+    pemilik.atomCoin += petak.sewa;
+    
+    return {
+      sukses: true,
+      pesan: `Membayar sewa ${petak.sewa}⚛️ untuk ${petak.nama} kepada ${pemilik.nama}`
+    };
+  }
+
+  // Cek apakah pemain memiliki semua unsur dalam satu golongan
+  cekLabMini(pemainId, golongan) {
+    const unsurDalamGolongan = this.papan.filter(
+      petak => petak.tipe === "unsur" && petak.golongan === golongan
+    );
+    
+    // Cek apakah semua unsur dalam golongan dimiliki pemain
+    const semuaDimiliki = unsurDalamGolongan.every(
+      unsur => unsur.pemilik === pemainId
+    );
+    
+    return semuaDimiliki;
+  }
+
+  // Bangun lab mini
+  bangunLabMini(golongan, jawabanSoal = null) {
+    const pemain = this.pemain[this.pemainSaatIni];
+    
+    // Cek apakah pemain memiliki semua unsur dalam golongan
+    if (!this.cekLabMini(pemain.id, golongan)) {
+      return {
+        sukses: false,
+        pesan: `Anda tidak memiliki semua unsur dalam golongan ${golongan}`
+      };
+    }
+    
+    // Cek apakah sudah punya lab mini di golongan ini
+    if (pemain.labMini.includes(golongan)) {
+      return {
+        sukses: false,
+        pesan: `Anda sudah memiliki Lab Mini di golongan ${golongan}`
+      };
+    }
+    
+    // Biaya pembangunan lab mini
+    const biaya = 200;
+    
+    // Cek apakah pemain punya cukup uang
+    if (pemain.atomCoin < biaya) {
+      return {
+        sukses: false,
+        pesan: "Atom Coin tidak cukup untuk membangun Lab Mini"
+      };
+    }
+
+    // Cek jawaban soal stoikiometri (jika diaktifkan)
+    if (jawabanSoal !== null) {
+      const soalStoikiometri = this.buatSoalStoikiometri(golongan);
+      
+      // Periksa jawaban
+      if (Math.abs(jawabanSoal - soalStoikiometri.jawabanBenar) < 0.01) {
+        // Jawaban benar - Lab Mini berhasil dibangun
+      } else {
+        // Jawaban salah - Bayar denda perbaikan
+        pemain.atomCoin -= 30;
+        return {
+          sukses: false,
+          pesan: `Jawaban salah! Anda membayar 30⚛️ untuk perbaikan. Jawaban yang benar adalah ${soalStoikiometri.jawabanBenar} gram.`,
+          denda: 30
+        };
+      }
+    }
+    
+    // Bangun lab mini
+    pemain.atomCoin -= biaya;
+    pemain.labMini.push(golongan);
+    
+    // Tingkatkan sewa untuk unsur-unsur dalam golongan
+    this.papan.forEach(petak => {
+      if (petak.tipe === "unsur" && petak.golongan === golongan && petak.pemilik === pemain.id) {
+        // Perhitungan sewa baru sesuai golongan
+        if (golongan === "Alkali") {
+          petak.sewa = 80; // Naik dari 50 ke 80
+        } else if (golongan === "Gas Mulia") {
+          petak.sewa = 40; // Naik dari 20 ke 40
+        } else if (golongan === "Alkali Tanah") {
+          petak.sewa = 65; // Naik dari 40 ke 65
+        } else if (golongan === "Halogen") {
+          petak.sewa = 70; // Naik dari 45 ke 70
+        } else {
+          petak.sewa *= 1.6; // Kenaikan 60% untuk golongan lain
+        }
+      }
+    });
+    
+    // Tambahkan bonus khusus berdasarkan golongan
+    let bonus = {
+      tipe: null,
+      nilai: 0,
+      pesan: ""
+    };
+    
+    if (golongan === "Alkali") {
+      bonus.tipe = "kartu_reaksi_eksplosif";
+      bonus.nilai = 100;
+      bonus.pesan = "Anda mendapat kartu reaksi eksplosif: +100⚛️!";
+      pemain.atomCoin += 100;
+    } else if (golongan === "Halogen") {
+      bonus.tipe = "bonus_senyawa";
+      bonus.nilai = 50;
+      bonus.pesan = "Anda berhasil menggabungkan dengan logam untuk bonus senyawa: +50⚛️!";
+      pemain.atomCoin += 50;
+    } else if (golongan === "Gas Mulia") {
+      bonus.tipe = "stabilitas";
+      bonus.nilai = 30;
+      bonus.pesan = "Bonus stabilitas: Anda kebal dari biaya kartu selama 1 putaran!";
+      pemain.kebalBiayaKartu = true;
+    } else if (golongan === "Alkali Tanah") {
+      bonus.tipe = "reaktivitas";
+      bonus.nilai = 70;
+      bonus.pesan = "Bonus reaktivitas: +70⚛️ dan melangkah maju 2 langkah!";
+      pemain.atomCoin += 70;
+      pemain.posisi = (pemain.posisi + 2) % this.papan.length;
+    }
+    
+    return {
+      sukses: true,
+      pesan: `Berhasil membangun Lab Mini di golongan ${golongan}`,
+      bonus: bonus
+    };
+  }
+  
+  // Membuat soal stoikiometri berdasarkan golongan
+  buatSoalStoikiometri(golongan) {
+    const soal = {
+      pertanyaan: "",
+      jawabanBenar: 0
+    };
+    
+    // Data massa molar unsur (g/mol)
+    const massaMolar = {
+      "Na": 23,
+      "K": 39,
+      "Li": 7,
+      "He": 4,
+      "Ne": 20,
+      "Ar": 40,
+      "Ca": 40,
+      "Mg": 24,
+      "Be": 9,
+      "F": 19,
+      "Cl": 35.5,
+      "Br": 80
+    };
+    
+    // Buat soal berdasarkan golongan
+    let unsur = "";
+    let jumlahMol = Math.floor(Math.random() * 5) + 1; // 1-5 mol
+    
+    if (golongan === "Alkali") {
+      unsur = ["Na", "K", "Li"][Math.floor(Math.random() * 3)];
+    } else if (golongan === "Gas Mulia") {
+      unsur = ["He", "Ne", "Ar"][Math.floor(Math.random() * 3)];
+    } else if (golongan === "Alkali Tanah") {
+      unsur = ["Ca", "Mg", "Be"][Math.floor(Math.random() * 3)];
+    } else if (golongan === "Halogen") {
+      unsur = ["F", "Cl", "Br"][Math.floor(Math.random() * 3)];
+    }
+    
+    // Hitung jawaban
+    soal.jawabanBenar = jumlahMol * massaMolar[unsur];
+    
+    // Buat pertanyaan
+    soal.pertanyaan = `Untuk membangun Lab Mini ${golongan}, dibutuhkan ${jumlahMol} mol ${unsur}. Jika massa molar ${unsur} = ${massaMolar[unsur]} g/mol, hitung massa yang diperlukan (dalam gram)!`;
+    
+    return soal;
+  }
+
+  // Ganti giliran ke pemain berikutnya
+  giliranBerikutnya() {
+    this.pemainSaatIni = (this.pemainSaatIni + 1) % this.pemain.length;
+    return this.pemainSaatIni;
+  }
+
+  // Mendapatkan informasi pemain saat ini
+  getInfoPemainSaatIni() {
+    return this.pemain[this.pemainSaatIni];
+  }
+
+  // Mendapatkan informasi semua pemain
+  getAllPemain() {
+    return this.pemain;
+  }
+
+  // Mendapatkan informasi papan permainan
+  getPapan() {
+    return this.papan;
+  }
+}
+
+        // Method untuk melewatkan giliran dengan penalti uang
+    skipTurnWithPenalty(player) 
+        if (player.money >= 30) {
+            player.money -= 30;
+            this.updatePlayerMoney(player);
+            
+            const messageContainer = document.getElementById('game-messages');
+            messageContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <h4>Melewatkan Giliran dengan Denda!</h4>
+                    <p>Pemain ${player.name} memilih untuk melewatkan giliran dan membayar denda 30⚛️.</p>
+                    <p>Saldo Anda sekarang: ${player.money}⚛️</p>
+                </div>
+            `;
+            
+            player.inContamination = true;
+            player.contaminationTurns = 1;
+            
+            // Reset opsi pemain
+            document.getElementById('player-options').innerHTML = '';
+            
+            // Aktifkan tombol "Lanjutkan" untuk melanjutkan permainan
+            const optionsContainer = document.getElementById('player-options');
+            optionsContainer.innerHTML = `
+                <button id="continue-game" class="btn btn-primary">Lanjutkan</button>
+            `;
+            
+            document.getElementById('continue-game').addEventListener('click', () => {
+                // Lanjut ke pemain berikutnya
+                this.game.nextTurn();
+            });
+        } else {
+            const messageContainer = document.getElementById('game-messages');
+            messageContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <h4>Dana Tidak Mencukupi!</h4>
+                    <p>Anda tidak memiliki cukup uang untuk membayar denda 30⚛️.</p>
+                    <p>Silakan pilih opsi lain.</p>
+                </div>
+            `;
+            // Nonaktifkan tombol skipTurn
+            document.getElementById('skip-turn').disabled = true;
+        }
+    // Kode untuk penanganan kontaminasi dalam permainan monopoli kimia
+class ContaminationHandler {
+    constructor(game) {
+        this.game = game;
+        this.safetyQuestions = [
+            {
+                question: "Apa yang harus dilakukan jika terkena asam sulfat?",
+                answer: "Bilas dengan air mengalir selama minimal 15 menit dan segera dapatkan bantuan medis",
+                options: [
+                    "Bilas dengan air mengalir selama minimal 15 menit dan segera dapatkan bantuan medis",
+                    "Netralkan dengan basa kuat",
+                    "Lap dengan kain kering",
+                    "Tutup dengan perban"
+                ]
+            },
+            {
+                question: "Apa yang harus dilakukan jika terjadi kebakaran di laboratorium?",
+                answer: "Gunakan alat pemadam kebakaran yang sesuai dan evakuasi laboratorium",
+                options: [
+                    "Gunakan air untuk memadamkan api",
+                    "Tutup semua jendela dan pintu lalu tinggalkan ruangan",
+                    "Gunakan alat pemadam kebakaran yang sesuai dan evakuasi laboratorium",
+                    "Lari keluar tanpa memberitahu siapapun"
+                ]
+            },
+            {
+                question: "Bagaimana cara yang benar menyimpan bahan kimia yang mudah terbakar?",
+                answer: "Dalam lemari khusus bahan mudah terbakar dengan ventilasi yang baik",
+                options: [
+                    "Dalam lemari biasa bersama bahan kimia lainnya",
+                    "Di bawah wastafel laboratorium",
+                    "Dalam lemari khusus bahan mudah terbakar dengan ventilasi yang baik",
+                    "Di atas meja kerja untuk memudahkan akses"
+                ]
+            },
+            {
+                question: "Apa yang harus digunakan saat menangani bahan kimia yang bersifat korosif?",
+                answer: "Sarung tangan karet, jas lab, dan kacamata pelindung",
+                options: [
+                    "Sarung tangan kain biasa",
+                    "Sarung tangan karet, jas lab, dan kacamata pelindung",
+                    "Hanya menggunakan masker",
+                    "Tidak perlu pelindung khusus"
+                ]
+            },
+            {
+                question: "Jika terjadi tumpahan merkuri di laboratorium, apa yang harus dilakukan?",
+                answer: "Evakuasi area, gunakan kit pembersihan merkuri khusus, dan jangan menggunakan penyedot debu biasa",
+                options: [
+                    "Bersihkan dengan kain basah",
+                    "Sapu dan buang ke tempat sampah biasa",
+                    "Gunakan penyedot debu untuk membersihkannya",
+                    "Evakuasi area, gunakan kit pembersihan merkuri khusus, dan jangan menggunakan penyedot debu biasa"
+                ]
+            },
+            {
+                question: "Bagaimana cara yang benar untuk mencium bau bahan kimia di laboratorium?",
+                answer: "Kipaskan uap secara lembut ke arah hidung, jangan hirup langsung",
+                options: [
+                    "Hirup langsung dari wadah",
+                    "Cium dari jarak dekat",
+                    "Kipaskan uap secara lembut ke arah hidung, jangan hirup langsung",
+                    "Minta teman untuk menciumnya terlebih dahulu"
+                ]
+            },
+            {
+                question: "Bagaimana cara yang benar untuk menyimpan zat oksidator dan bahan yang mudah terbakar?",
+                answer: "Pisahkan dan simpan di lemari yang berbeda",
+                options: [
+                    "Simpan bersebelahan untuk memudahkan akses",
+                    "Campur agar hemat tempat",
+                    "Pisahkan dan simpan di lemari yang berbeda",
+                    "Simpan di lemari yang sama asal dalam wadah tertutup"
+                ]
+            },
+            {
+                question: "Apa yang harus dilakukan jika mata terkena percikan bahan kimia?",
+                answer: "Bilas dengan air mengalir pada eye wash station selama minimal 15 menit",
+                options: [
+                    "Tutup mata dan istirahatkan",
+                    "Lap dengan kain bersih",
+                    "Bilas dengan air mengalir pada eye wash station selama minimal 15 menit",
+                    "Teteskan obat mata yang tersedia di kotak P3K"
+                ]
+            },
+            {
+                question: "Simbol apa yang menandakan bahan kimia bersifat korosif?",
+                answer: "Gambar cairan yang menetes pada tangan dan permukaan logam",
+                options: [
+                    "Gambar api",
+                    "Gambar tengkorak dan tulang bersilang",
+                    "Gambar cairan yang menetes pada tangan dan permukaan logam",
+                    "Gambar tanda seru"
+                ]
+            },
+            {
+                question: "Apa yang harus dilakukan sebelum meninggalkan laboratorium?",
+                answer: "Matikan semua peralatan, tutup semua wadah bahan kimia, dan cuci tangan",
+                options: [
+                    "Cukup matikan lampu dan kunci pintu",
+                    "Matikan semua peralatan, tutup semua wadah bahan kimia, dan cuci tangan",
+                    "Laporkan ke petugas keamanan",
+                    "Tidak perlu melakukan apa-apa"
+                ]
+            }
+        ];
+    }
+
+    // Method untuk menangani ketika pemain masuk ke area kontaminasi
+    handleContamination(player) {
+        player.inContamination = true;
+        player.contaminationTurns = 1; // Pemain harus melewatkan 1 putaran
+        
+        this.showContaminationMessage(player);
+        this.displaySafetyQuestionOption(player);
+    }
+
+    // Method untuk menampilkan pesan ketika pemain masuk area kontaminasi
+    showContaminationMessage(player) {
+        const messageContainer = document.getElementById('game-messages');
+        messageContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <h4><i class="fas fa-radiation"></i> AREA KONTAMINASI!</h4>
+                <p>Pemain ${player.name} telah memasuki area kontaminasi!</p>
+                <p>Anda memiliki tiga pilihan:</p>
+                <ul>
+                    <li>Melewatkan 1 putaran dengan denda 30⚛️</li>
+                    <li>Menjawab pertanyaan keselamatan lab (berhasil = bebas langsung, gagal = lewati 1 putaran tanpa denda)</li>
+                    <li>Membayar 50⚛️ untuk pembersihan langsung</li>
+                </ul>
+            </div>
+        `;
+    }
+
+    // Method untuk menampilkan pilihan untuk keluar dari area kontaminasi
+    displaySafetyQuestionOption(player) {
+        const optionsContainer = document.getElementById('player-options');
+        optionsContainer.innerHTML = `
+            <div class="contamination-options">
+                <button id="skip-turn" class="btn btn-secondary">Lewatkan 1 Putaran (Dipotong 30⚛️)</button>
+                <button id="answer-safety-question" class="btn btn-primary">Jawab Pertanyaan Keselamatan</button>
+                <button id="pay-cleanup-fee" class="btn btn-warning">Bayar 50⚛️ untuk Pembersihan Langsung</button>
+            </div>
+        `;
+
+        // Event listener untuk tombol lewatkan putaran
+        document.getElementById('skip-turn').addEventListener('click', () => {
+            this.skipTurnWithPenalty(player);
+        });
+
+        // Event listener untuk tombol jawab pertanyaan
+        document.getElementById('answer-safety-question').addEventListener('click', () => {
+            this.askSafetyQuestion(player);
+        });
+
+        // Event listener untuk tombol bayar pembersihan
+        document.getElementById('pay-cleanup-fee').addEventListener('click', () => {
+            this.payCleanupFee(player);
+        });
+    }
+
+    // Method untuk menampilkan pertanyaan keselamatan lab
+    askSafetyQuestion(player) {
+        // Pilih pertanyaan secara acak
+        const randomIndex = Math.floor(Math.random() * this.safetyQuestions.length);
+        const question = this.safetyQuestions[randomIndex];
+
+        // Acak urutan pilihan jawaban
+        const shuffledOptions = [...question.options];
+        this.shuffleArray(shuffledOptions);
+
+        const questionContainer = document.getElementById('player-options');
+        questionContainer.innerHTML = `
+            <div class="safety-question">
+                <h4>Pertanyaan Keselamatan Lab:</h4>
+                <p>${question.question}</p>
+                <div class="options">
+                    ${shuffledOptions.map((option, index) => `
+                        <button id="option-${index}" class="btn btn-outline-primary option-btn">${option}</button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // Tambahkan event listener untuk setiap tombol jawaban
+        shuffledOptions.forEach((option, index) => {
+            document.getElementById(`option-${index}`).addEventListener('click', () => {
+                this.checkAnswer(player, option, question.answer);
+            });
+        });
+    }
+
+    // Method untuk memeriksa jawaban pemain
+    checkAnswer(player, selectedAnswer, correctAnswer) {
+        if (selectedAnswer === correctAnswer) {
+            // Jawaban benar
+            this.releaseFromContamination(player, true);
+        } else {
+            // Jawaban salah
+            const messageContainer = document.getElementById('game-messages');
+            messageContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h4>Jawaban Salah!</h4>
+                    <p>Jawaban yang benar adalah: ${correctAnswer}</p>
+                    <p>Anda harus melewatkan 1 putaran, tetapi saldo Anda tidak akan dikurangi.</p>
+                </div>
+            `;
+            
+            // Pemain harus melewatkan 1 putaran tapi tanpa denda uang
+            player.inContamination = true;
+            player.contaminationTurns = 1;
+            
+            // Reset opsi pemain
+            document.getElementById('player-options').innerHTML = '';
+            
+            // Aktifkan tombol "Lanjutkan" untuk melanjutkan permainan
+            const optionsContainer = document.getElementById('player-options');
+            optionsContainer.innerHTML = `
+                <button id="continue-game" class="btn btn-primary">Lanjutkan</button>
+            `;
+            
+            document.getElementById('continue-game').addEventListener('click', () => {
+                // Lanjut ke pemain berikutnya
+                this.game.nextTurn();
+            });
+        }
+    }
+
+    // Method untuk membayar biaya pembersihan
+    payCleanupFee(player) {
+        if (player.money >= 50) {
+            player.money -= 50;
+            this.releaseFromContamination(player, false);
+            this.updatePlayerMoney(player);
+        } else {
+            const messageContainer = document.getElementById('game-messages');
+            messageContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <h4>Dana Tidak Mencukupi!</h4>
+                    <p>Anda tidak memiliki cukup uang untuk membayar biaya pembersihan 50⚛️.</p>
+                    <p>Silakan pilih opsi lain.</p>
+                </div>
+            `;
+            document.getElementById('pay-cleanup-fee').disabled = true;
+        }
+    }
+
+    // Method untuk membebaskan pemain dari area kontaminasi
+    releaseFromContamination(player, answeredCorrectly) {
+        player.inContamination = false;
+        player.contaminationTurns = 0;
+
+        const messageContainer = document.getElementById('game-messages');
+        if (answeredCorrectly) {
+            messageContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <h4>Selamat! Anda Bebas!</h4>
+                    <p>Anda berhasil menjawab pertanyaan keselamatan lab dengan benar dan dibebaskan dari area kontaminasi.</p>
+                </div>
+            `;
+        } else {
+            messageContainer.innerHTML = `
+                <div class="alert alert-info">
+                    <h4>Pembersihan Selesai!</h4>
+                    <p>Anda telah membayar 50⚛️ untuk pembersihan dan dibebaskan dari area kontaminasi.</p>
+                </div>
+            `;
+        }
+
+        // Reset opsi pemain
+        document.getElementById('player-options').innerHTML = '';
+        
+        // Aktifkan kembali dadu untuk giliran berikutnya
+        this.game.enableDiceRoll();
+    }
+
+    // Method untuk memperbarui tampilan uang pemain
+    updatePlayerMoney(player) {
+        const playerMoneyElement = document.getElementById(`player-${player.id}-money`);
+        if (playerMoneyElement) {
+            playerMoneyElement.textContent = `${player.money}⚛️`;
+        }
+    }
+
+    // Method untuk mengacak array (Fisher-Yates shuffle)
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+    // Method untuk menangani pemain yang melewatkan giliran
+    handleSkipTurn(player) {
+        if (player.inContamination && player.contaminationTurns > 0) {
+            player.contaminationTurns--;
+            
+            const messageContainer = document.getElementById('game-messages');
+            messageContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <h4>Melewatkan Giliran!</h4>
+                    <p>Pemain ${player.name} melewatkan giliran karena berada di area kontaminasi.</p>
+                    ${player.contaminationTurns === 0 ? '<p>Anda dapat bermain lagi pada giliran berikutnya.</p>' : ''}
+                </div>
+            `;
+            
+            if (player.contaminationTurns === 0) {
+                player.inContamination = false;
+            }
+            
+            // Lanjut ke pemain berikutnya
+            this.game.nextTurn();
+        }
+    }
+
+    // Method untuk memeriksa apakah pemain sedang dalam area kontaminasi
+    checkContaminationStatus(player) {
+        if (player.inContamination) {
+            if (player.contaminationTurns > 0) {
+                this.displaySafetyQuestionOption(player);
+                return true;
+            }
+        }
+        return false;
+    }
+}
+// Contoh penggunaan dalam game utama
+function integrateContaminationHandler(game) {
+    // Inisialisasi penanganan kontaminasi
+    const contaminationHandler = new ContaminationHandler(game);
+    
+    // Tambahkan properti ke objek pemain
+    game.players.forEach(player => {
+        player.inContamination = false;
+        player.contaminationTurns = 0;
+    });
+    
+    // Tambahkan penanganan kontaminasi ke petak permainan
+    const contaminationSquareIndex = 30; // Misalnya, petak ke-30 adalah area kontaminasi
+    game.board.squares[contaminationSquareIndex].type = 'contamination';
+    game.board.squares[contaminationSquareIndex].action = (player) => {
+        contaminationHandler.handleContamination(player);
+    };
+    
+    // Modifikasi fungsi giliran pemain
+    const originalStartTurn = game.startTurn;
+    game.startTurn = function(player) {
+        // Cek apakah pemain berada di area kontaminasi
+        if (contaminationHandler.checkContaminationStatus(player)) {
+            // Pemain dalam kontaminasi, tampilkan opsi
+            return;
+        }
+        
+        // Lanjutkan dengan fungsi asli
+        originalStartTurn.call(game, player);
+    };
+    
+    // Tambahkan juga penanganan kontaminasi ke objek game
+    game.contaminationHandler = contaminationHandler;
+    
+    return contaminationHandler;
+}
+// Sistem Tujuan Menang untuk Monopoli Kimia
+class GameWinCondition {
+  constructor(players, elements) {
+    this.players = players; // Array dari pemain
+    this.elements = elements; // Data semua unsur dalam permainan
+    this.isGameOver = false;
+    this.winner = null;
+  }
+
+  // Cek apakah pemain memiliki 2 golongan lengkap
+  hasCompleteGroups(player) {
+    // Mapping unsur ke golongan
+    const groupOwnership = {};
+    
+    // Menghitung unsur per golongan yang dimiliki pemain
+    player.ownedElements.forEach(elementId => {
+      const element = this.elements.find(e => e.id === elementId);
+      if (element) {
+        if (!groupOwnership[element.group]) {
+          groupOwnership[element.group] = { owned: 0, total: 0 };
+        }
+        groupOwnership[element.group].owned++;
+      }
+    });
+    
+    // Hitung total unsur per golongan
+    this.elements.forEach(element => {
+      if (!groupOwnership[element.group]) {
+        groupOwnership[element.group] = { owned: 0, total: 0 };
+      }
+      groupOwnership[element.group].total++;
+    });
+    
+    // Hitung golongan lengkap yang dimiliki
+    let completeGroups = 0;
+    Object.keys(groupOwnership).forEach(group => {
+      if (groupOwnership[group].owned === groupOwnership[group].total) {
+        completeGroups++;
+      }
+    });
+    
+    return completeGroups >= 2;
+  }
+  
+  // Cek jumlah lab mini yang dimiliki pemain
+  countMiniLabs(player) {
+    return player.miniLabs || 0;
+  }
+  
+  // Cek kondisi kemenangan utama
+  checkPrimaryWinCondition() {
+    for (const player of this.players) {
+      if (this.hasCompleteGroups(player) && this.countMiniLabs(player) >= 3) {
+        this.isGameOver = true;
+        this.winner = player;
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  // Cek kondisi kemenangan alternatif (semua unsur habis terjual)
+  checkAlternativeWinCondition() {
+    // Cek apakah semua unsur sudah terjual
+    const allElementsSold = this.elements.every(element => element.owner !== null);
+    
+    if (allElementsSold) {
+      // Cari pemain dengan Atom Coin terbanyak
+      let maxCoins = -1;
+      let richestPlayer = null;
+      
+      this.players.forEach(player => {
+        if (player.atomCoins > maxCoins) {
+          maxCoins = player.atomCoins;
+          richestPlayer = player;
+        }
+      });
+      
+      this.isGameOver = true;
+      this.winner = richestPlayer;
+      return true;
+    }
+    
+    return false;
+  }
+  
+  // Mengecek apakah permainan sudah berakhir dan menentukan pemenang
+  checkGameOver() {
+    // Cek kondisi kemenangan utama terlebih dahulu
+    if (this.checkPrimaryWinCondition()) {
+      return {
+        gameOver: true,
+        winner: this.winner,
+        winMethod: "primary",
+        message: `${this.winner.name} memenangkan permainan dengan mengumpulkan 2 golongan lengkap dan 3 Lab Mini!`
+      };
+    }
+    // Jika tidak ada yang memenuhi kondisi utama, cek kondisi alternatif
+    if (this.checkAlternativeWinCondition()) {
+      return {
+        gameOver: true,
+        winner: this.winner,
+        winMethod: "alternative",
+        message: `${this.winner.name} memenangkan permainan dengan Atom Coin terbanyak (${this.winner.atomCoins})!`
+      };
+    }
+    
+    // Permainan masih berlanjut
+    return {
+      gameOver: false,
+      winner: null,
+      winMethod: null,
+      message: "Permainan masih berlanjut."
+    };
+  }
+  
+  // Fungsi untuk menampilkan status progres setiap pemain
+  getPlayerProgress(playerId) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return null;
+    
+    const completeGroups = this.getCompleteGroupsInfo(player);
+    const miniLabCount = this.countMiniLabs(player);
+    
+    return {
+      player: player.name,
+      atomCoins: player.atomCoins,
+      completeGroups: {
+        count: completeGroups.complete,
+        needed: 2,
+        details: completeGroups.details
+      },
+      miniLabs: {
+        count: miniLabCount,
+        needed: 3
+      },
+      progressPercentage: this.calculateProgressPercentage(completeGroups.complete, miniLabCount)
+    };
+  }
+  
+  // Mendapatkan informasi detail tentang golongan lengkap
+  getCompleteGroupsInfo(player) {
+    const groupOwnership = {};
+    
+    // Mapping unsur ke golongan
+    this.elements.forEach(element => {
+      if (!groupOwnership[element.group]) {
+        groupOwnership[element.group] = { 
+          owned: 0, 
+          total: 0, 
+          name: element.groupName || `Golongan ${element.group}`
+        };
+      }
+      groupOwnership[element.group].total++;
+      
+      if (player.ownedElements.includes(element.id)) {
+        groupOwnership[element.group].owned++;
+      }
+    });
+    
+    // Hitung golongan lengkap
+    let completeCount = 0;
+    const details = [];
+    
+    Object.keys(groupOwnership).forEach(group => {
+      const isComplete = groupOwnership[group].owned === groupOwnership[group].total;
+      if (isComplete) completeCount++;
+      
+      details.push({
+        group: groupOwnership[group].name,
+        owned: groupOwnership[group].owned,
+        total: groupOwnership[group].total,
+        complete: isComplete
+      });
+    });
+    
+    return {
+      complete: completeCount,
+      details: details
+    };
+  }
+  
+  // Menghitung persentase progres pemain menuju kemenangan
+  calculateProgressPercentage(completeGroups, miniLabs) {
+    // Total yang dibutuhkan: 2 golongan lengkap (50%) dan 3 lab mini (50%)
+    const groupPercentage = Math.min(completeGroups / 2, 1) * 50;
+    const labPercentage = Math.min(miniLabs / 3, 1) * 50;
+    
+    return Math.round(groupPercentage + labPercentage);
+  }
+  
+  // Tampilkan ringkasan status semua pemain
+  getGameSummary() {
+    return this.players.map(player => this.getPlayerProgress(player.id));
+  }
+}
+    </script>
+</body>
+</html>
