@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopoli Kimia - Versi Lengkap</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6e9f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Game Container */
+        .game-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Board Styles */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .board-container {
+            position: relative;
+            width: 800px;
+            height: 800px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+
+        /* Cell Styles */
+       .cell {
+            position: relative;
+            border: 2px solid #333;
+            padding: 10px;
+            text-align: center;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            aspect-ratio: 1;
+       }
+
+        .cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .cell-title {
+            font-weight: bold;
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .cell-price {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Element Group Colors */
+        .alkali {
+            border-color: #ff6b6b;
+            background: linear-gradient(to bottom, #fff 0%, #ffe5e5 100%);
+        }
+
+        .alkaline-earth {
+            border-color: #4ecdc4;
+            background: linear-gradient(to bottom, #fff 0%, #e5f9f7 100%);
+        }
+
+        .halogen {
+            border-color: #95a5a6;
+            background: linear-gradient(to bottom, #fff 0%, #f0f3f4 100%);
+        }
+
+        .noble-gas {
+            border-color: #f1c40f;
+            background: linear-gradient(to bottom, #fff 0%, #fef9e5 100%);
+        }
+
+        /* Player Token Styles */
+        .token-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .player-token {
+            position: absolute;
+            transition: transform 0.3s ease-in-out;
+            will-change: transform;
+        }
+
+        .moving {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .token-1 {
+            background: #e74c3c;
+        }
+
+        .token-2 {
+            background: #3498db;
+        }
+
+        /* Player Info Panel */
+        .player-panel {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 400px;
+        }
+
+        .player-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .current-player {
+            background: #e3f2fd;
+            transform: translateX(10px);
+        }
+
+        .player-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        /* Controls */
+        .game-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin: 0 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .roll-button {
+            padding: 15px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .roll-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .roll-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 15% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .submit-answer {
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .submit-answer:hover {
+            background: #45a049;
+        }
+
+        /* Animation Classes */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .bounce {
+            animation: bounce 0.5s ease infinite;
+        }
+
+        .shake {
+            animation: shake 0.5s ease infinite;
+        }
+
+        /* Property Cards */
+        .property-list {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .property-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        /* Lab Building Interface */
+        .lab-interface {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .lab-requirements {
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .build-lab-btn {
+            padding: 8px 16px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .build-lab-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .moving {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .info-btn {
+            position: absolute;
+            right: 5px;
+            bottom: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .info-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .element-info {
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .element-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .element-info p {
+            margin: 10px 0;
+            color: #34495e;
+        }
+
+        .element-info ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            color: #34495e;
+        }
+
+        .buy-confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        .buy-confirm-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 15% auto;
+            text-align: center;
+        }
+
+        .buy-confirm-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .buy-confirm-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .buy-yes {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .buy-no {
+            background: #f44336;
+            color: white;
+        }
+                @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .bounce {
+            animation: bounce 0.3s ease infinite;
+        }
+                .board-container {
+            position: relative;
+            width: 800px;
+            height: 800px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow: hidden; /* Tambahkan ini untuk memastikan pion tidak keluar */
+        }
+
+        .lab-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 1.2em;
+            color: #2ecc71;
+        }
+
+        .cell.has-lab {
+            background: linear-gradient(135deg, rgba(46,204,113,0.1) 0%, rgba(46,204,113,0.2) 100%);
+        }
+
+        .lab-info {
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: #27ae60;
+        }
+
+        /* Achievement Styles */
+        .achievements-section,
+        .power-ups-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .achievements-container,
+        .power-ups-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .achievement-card,
+        .power-up-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+            border-color: #96e6a1;
+        }
+
+        .achievement-icon,
+        .power-up-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .achievement-name,
+        .power-up-name {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+
+        .achievement-description,
+        .power-up-description {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .power-up-price {
+            color: #2ecc71;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .power-up-buy-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .power-up-buy-btn:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .power-up-buy-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Achievement animation */
+        @keyframes achievementUnlock {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .achievement-unlock-animation {
+            animation: achievementUnlock 0.5s ease;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+            margin: 20px auto;
+        }
+
+        .dice.rolling {
+            animation: roll 0.5s linear infinite;
+        }
+
+        .player-token {
+            transition: all 0.5s ease-in-out;
+            will-change: transform;
+        }
+
+        .player-token.moving {
+            animation: lompat 0.5s ease infinite;
+        }
+
+        @keyframes lompat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .board-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .token-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .dice.rolling {
+            animation: putar 0.5s linear infinite;
+        }
+
+        @keyframes putar {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .player-token.jumping {
+        animation: jumpAnimation 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes jumpAnimation {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-30px) scale(1.2);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="board-container">
+            <div class="board" id="board">
+                <!-- Board will be generated by JavaScript -->
+            </div>
+            <div class="token-container" id="tokenContainer">
+                <!-- Tokens will be added here -->
+            </div>
+        </div>
+
+        <div class="player-panel">
+            <h2>Info Permainan</h2>
+            <div id="players">
+                <!-- Player information will be displayed here -->
+            </div>
+            <div class="game-controls">
+                <div class="dice-container">
+                    <div class="dice" id="dice">⚀</div>
+                </div>
+                <button class="roll-button" id="rollDice">Lempar Dadu</button>
+            </div>
+            <div class="achievements-section">
+                <h3>Achievements</h3>
+                <div class="achievements-container" id="achievementsContainer"></div>
+            </div>
+            <div class="power-ups-section">
+                <h3>Power-ups Shop</h3>
+                <div class="power-ups-container" id="powerUpsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="questionTitle">Pertanyaan</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="question-text" id="questionText"></p>
+                <input type="text" class="answer-input" id="answerInput" placeholder="Masukkan jawaban">
+                <button class="submit-answer" onclick="checkAnswer()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+        <div id="buyConfirmModal" class="buy-confirm-modal">
+        <div class="buy-confirm-content">
+            <h3>Konfirmasi Pembelian</h3>
+            <p id="buyConfirmText"></p>
+            <div class="buy-confirm-buttons">
+                <button class="buy-confirm-button buy-yes" onclick="confirmBuy(true)">Ya</button>
+                <button class="buy-confirm-button buy-no" onclick="confirmBuy(false)">Tidak</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Di bagian atas file, setelah deklarasi variabel
+        console.log('Game script loaded');
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded');
+            console.log('Roll button exists:', !!document.getElementById('rollDice'));
+        });
+
+        // Game Configuration
+        const BOARD_SIZE = 16;
+        const START_MONEY = 300;
+        const PASS_START_BONUS = 20;
+        const MAX_ROUNDS = 500;
+        const LAB_COST = 300; // Biaya pembangunan laboratorium
+        const LAB_RENT_MULTIPLIER = 2; // Pengali sewa jika ada lab
+
+        // Board Data
+        const boardData = {
+            cells: [
+                { type: 'start', name: 'Mulai', value: PASS_START_BONUS, icon: '🔬' },
+                { type: 'alkali', name: 'Natrium (Na)', value: 100, icon: '⚛️' },
+                { type: 'alkali', name: 'Kalium (K)', value: 100, icon: '⚛️' },
+                { type: 'alkali', name: 'Lithium (Li)', value: 100, icon: '⚛️' },
+                { type: 'alkaline-earth', name: 'Magnesium (Mg)', value: 120, icon: '⚛️' },
+                { type: 'contamination', name: 'Kontaminasi', value: 0, icon: '☢️' },
+                { type: 'alkaline-earth', name: 'Kalsium (Ca)', value: 120, icon: '⚛️' },
+                { type: 'alkaline-earth', name: 'Barium (Ba)', value: 120, icon: '⚛️' },
+                { type: 'halogen', name: 'Klor (Cl)', value: 140, icon: '⚛️' },
+                { type: 'reaction', name: 'Reaksi Kimia', value: 0, icon: '⚗️' },
+                { type: 'halogen', name: 'Brom (Br)', value: 140, icon: '⚛️' },
+                { type: 'halogen', name: 'Iodin (I)', value: 140, icon: '⚛️' },
+                { type: 'noble-gas', name: 'Helium (He)', value: 160, icon: '⚛️' },
+                { type: 'contamination', name: 'Kontaminasi', value: 0, icon: '☢️' },
+                { type: 'noble-gas', name: 'Neon (Ne)', value: 160, icon: '⚛️' },
+                { type: 'noble-gas', name: 'Argon (Ar)', value: 160, icon: '⚛️' }
+            ]
+        };
+
+        // Question Bank
+        const questions = {
+            buy: [
+                { question: "Unsur Alkali dalam garam dapur?", answer: "Natrium" },
+                { question: "Gas Mulia untuk balon?", answer: "Helium" },
+                { question: "Unsur Halogen untuk desinfeksi?", answer: "Klor" },
+                { question: "Unsur Alkali Tanah dalam tulang?", answer: "Kalsium" },
+                { question: "Gas Mulia dalam lampu reklame?", answer: "Neon" },          
+                { question: "Apa warna nyala dari garam Natrium?", answer: "Kuning" },
+                { question: "Bagaimana Lithium disimpan?", answer: "Dalam minyak" },
+                { question: "Sebutkan isotop Kalium yang radioaktif!", answer: "K-40" },
+                { question: "Apa nama mineral Kalsium Karbonat?", answer: "Kalsit" },
+                { question: "Bagaimana Magnesium bereaksi dengan air?", answer: "Lambat" },
+                { question: "Sebutkan penggunaan Barium dalam medis!", answer: "Kontras sinar-x" },
+                { question: "Apa warna larutan Brom?", answer: "Coklat" },
+                { question: "Bagaimana reaktivitas Iodin dibanding Klor?", answer: "Lebih rendah" },
+                { question: "Sebutkan bentuk molekul Klor!", answer: "Cl2" },
+                { question: "Mengapa Helium digunakan dalam balon?", answer: "Ringan" },
+                { question: "Apa warna lampu Neon murni?", answer: "Merah jingga" },
+                { question: "Sebutkan penggunaan Argon dalam industri!", answer: "Las listrik" }
+            ],
+
+            lab: [
+                { question: "Reaksi Magnesium + Oksigen?", answer: "Magnesium Oksida" },
+                { question: "Reaksi Natrium + Air?", answer: "Natrium Hidroksida" },
+                { question: "Reaksi Kalsium + Air?", answer: "Kalsium Hidroksida" },
+                { question: "Reaksi Klor + Natrium?", answer: "Natrium Klorida" },
+                { question: "Reaksi Lithium + Air?", answer: "Lithium Hidroksida" },
+                { question: "Apa warna nyala ketika Tembaga dibakar?", answer: "Hijau" },
+                { question: "Apa rumus kimia asam sulfat?", answer: "H2SO4" },
+                { question: "Apa nama reaksi antara asam dan basa?", answer: "Netralisasi" },
+                { question: "Apa indikator alami untuk asam basa?", answer: "Kunyit" },
+                { question: "Apa gas yang dihasilkan dari reaksi logam dan asam?", answer: "Hidrogen" },
+                { question: "Warna nyala dari garam Stronsium?", answer: "Merah" },
+                { question: "Apa yang terjadi jika CaCO3 dipanaskan?", answer: "Terurai" },
+                { question: "Reaksi fotosintesis menghasilkan?", answer: "Glukosa" },
+                { question: "Larutan elektrolit dapat menghantarkan?", answer: "Listrik" },
+                { question: "Perubahan warna pada bunga hidrangea disebabkan?", answer: "pH tanah" }
+            ],
+            contamination: [
+                { question: "Warna nyala Kalium?", answer: "Ungu" },
+                { question: "Alat pelindung mata di lab?", answer: "Kacamata" },
+                { question: "Simbol bahaya bahan korosif?", answer: "Tengkorak" },
+                { question: "Alat pemadam api di lab?", answer: "APAR" },
+                { question: "Warna gas Klor?", answer: "Kuning kehijauan" },
+                { question: "Apa yang harus dilakukan jika terkena bahan kimia di kulit?", answer: "Bilas air" },
+                { question: "Warna simbol bahan radioaktif?", answer: "Kuning hitam" },
+                { question: "Apa fungsi lemari asam di laboratorium?", answer: "Ventilasi" },
+                { question: "Apa yang harus dipakai saat menangani bahan kimia?", answer: "Sarung tangan" },
+                { question: "Jika terjadi kebakaran kecil, gunakan?", answer: "APAR" },
+                { question: "Posisi pintu lab yang benar saat praktikum?", answer: "Terbuka" },
+                { question: "Cara membau bahan kimia yang benar?", answer: "Kipas tangan" },
+                { question: "Pakaian lab yang tepat?", answer: "Jas lab" },
+                { question: "Pertolongan pertama pada luka bakar?", answer: "Air mengalir" },
+                { question: "Cara membuang limbah bahan kimia?", answer: "Wadah khusus" },
+                { question: "Lokasi penyimpanan bahan mudah terbakar?", answer: "Lemari khusus" },
+                { question: "Warna label untuk bahan mudah meledak?", answer: "Oranye" },
+                { question: "APD wajib di laboratorium?", answer: "Jas lab" },
+                { question: "Larangan di lab kimia?", answer: "Makan minum" },
+                { question: "Nomor telepon darurat lab?", answer: "119" }
+            ]
+        };
+
+        // Tambahkan perpustakaan kimia
+        const chemistryLibrary = {
+            elements: {
+                'Na': {
+                    name: 'Natrium',
+                    atomicNumber: 11,
+                    group: 'Alkali',
+                    properties: {
+                        electronConfiguration: '[Ne]3s1',
+                        meltingPoint: '97.72°C',
+                        boilingPoint: '883°C',
+                        uses: ['Lampu natrium', 'Garam dapur', 'Industri kimia']
+                    }
+                },
+                'K': {
+                    name: 'Kalium',
+                    atomicNumber: 19,
+                    group: 'Alkali',
+                    properties: {
+                        electronConfiguration: '[Ar]4s1',
+                        meltingPoint: '63.38°C',
+                        boilingPoint: '759°C',
+                        uses: ['Pupuk', 'Baterai', 'Katalis']
+                    }
+                },
+                'Li': {
+                    name: 'Lithium',
+                    atomicNumber: 3,
+                    group: 'Alkali',
+                    properties: {
+                        electronConfiguration: '[He]2s1',
+                        meltingPoint: '180.54°C',
+                        boilingPoint: '1342°C',
+                        uses: ['Baterai lithium', 'Paduan logam', 'Obat-obatan']
+                    }
+                },
+                // Tambahkan unsur lainnya sesuai dengan yang ada di papan
+            },
+            
+            getElementInfo(symbol) {
+                const element = this.elements[symbol];
+                if (!element) return null;
+                
+                return `
+                    <div class="element-info">
+                        <h3>${element.name} (${symbol})</h3>
+                        <p>Nomor Atom: ${element.atomicNumber}</p>
+                        <p>Golongan: ${element.group}</p>
+                        <p>Konfigurasi Elektron: ${element.properties.electronConfiguration}</p>
+                        <p>Titik Leleh: ${element.properties.meltingPoint}</p>
+                        <p>Titik Didih: ${element.properties.boilingPoint}</p>
+                        <p>Kegunaan:</p>
+                        <ul>
+                            ${element.properties.uses.map(use => `<li>${use}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        };
+        
+        // Pengelolaan laboratorium //
+                function handleLabPurchase(cell) {
+            const player = players[currentPlayerIndex];
+            const property = player.properties.find(p => p === cell.name);
+            
+            if (!property) {
+                showMessage("Anda harus memiliki properti ini terlebih dahulu untuk membangun laboratorium!");
+                setTimeout(() => {
+                finishTurn();
+                }, 2000);
+                return;
+            }
+            
+            if (player.money < LAB_COST) {
+                showMessage("Uang Anda tidak cukup untuk membangun laboratorium!");
+                setTimeout(() => {
+                finishTurn();
+                }, 2000);
+                return;
+            }
+            
+            if (player.labs && player.labs.includes(cell.name)) {
+                showMessage("Sudah ada laboratorium di properti ini!");
+                setTimeout(() => {
+                    finishTurn();
+                }, 2000);
+                return;
+            }
+
+            showQuestion('lab', () => {
+                // Jika berhasil menjawab pertanyaan
+                player.money -= LAB_COST;
+                if (!player.labs) player.labs = [];
+                player.labs.push(cell.name);
+                showMessage(`${player.name} berhasil membangun laboratorium di ${cell.name}!`);
+                updatePlayersInfo();
+                setTimeout(() => {
+                finishTurn();
+            }, 2000);
+        }, 
+                // Jika gagal menjawab pertanyaan
+                () => {
+                showMessage(`${player.name} gagal menjawab pertanyaan dan tidak dapat membangun laboratorium.`);
+                setTimeout(() => {
+                finishTurn();
+                    }, 2000);
+                }
+            );
+        }
+
+
+        // Tampilan laboratorium di papan permainan //
+                function createCellElement(cell, index) {
+            const cellElement = document.createElement('div');
+            cellElement.className = `cell ${cell.type}`;
+            
+            if (cell.type === 'alkali' || cell.type === 'alkaline-earth' || 
+                cell.type === 'halogen' || cell.type === 'noble-gas') {
+                const symbol = cell.name.match(/\(([^)]+)\)/)[1];
+                const hasLab = players.some(p => p.labs?.includes(cell.name));
+                
+                cellElement.innerHTML = `
+                    <div class="cell-title">
+                        ${cell.icon} ${cell.name}
+                        ${hasLab ? '🧪' : ''}
+                    </div>
+                    ${cell.value ? `<div class="cell-price">⚛${cell.value}</div>` : ''}
+                    <button class="info-btn" onclick="showElementInfo('${symbol}')">ℹ️</button>
+                `;
+            } else {
+                cellElement.innerHTML = `
+                    <div class="cell-title">${cell.icon} ${cell.name}</div>
+                    ${cell.value ? `<div class="cell-price">⚛${cell.value}</div>` : ''}
+                `;
+            }
+            
+            cellElement.dataset.index = index;
+            return cellElement;
+        }
+
+        // Kemenangan Laboratorium// 
+            function calculatePlayerScore(player) {
+            const propertyValue = player.properties.reduce((total, prop) => {
+                const cell = boardData.cells.find(c => c.name === prop);
+                return total + (cell ? cell.value : 0);
+            }, 0);
+            
+            const labValue = (player.labs?.length || 0) * LAB_COST;
+            
+            return player.money + propertyValue + labValue;
+        }
+
+        function endGame() {
+            const winner = players.reduce((prev, current) => 
+                (calculatePlayerScore(prev) > calculatePlayerScore(current)) ? prev : current
+            );
+            
+            const score = calculatePlayerScore(winner);
+            showMessage(`Permainan Selesai!\n${winner.name} menang dengan total nilai ⚛${score}!\n` +
+                        `(Uang: ⚛${winner.money}, Properti: ${winner.properties.length}, Lab: ${winner.labs?.length || 0})`);
+            
+            document.getElementById('rollDice').disabled = true;
+            
+            if (confirm('Mulai permainan baru?')) {
+                location.reload();
+            }
+        }
+
+        // Achievement System Configuration
+            const achievements = {
+            list: [
+                {
+                    id: 'lab_master',
+                    name: "Lab Master",
+                    description: "Bangun 3 laboratorium",
+                    reward: 200,
+                    icon: '🧪',
+                    isUnlocked: false,
+                    check: (player) => (player.labs?.length || 0) >= 3
+                },
+                {
+                    id: 'element_collector',
+                    name: "Element Collector",
+                    description: "Kumpulkan semua unsur dari satu golongan",
+                    reward: "lab_discount",
+                    icon: '⚛️',
+                    isUnlocked: false,
+                    check: (player) => {
+                        const groups = {
+                            'alkali': ['Natrium (Na)', 'Kalium (K)', 'Lithium (Li)'],
+                            'alkaline-earth': ['Magnesium (Mg)', 'Kalsium (Ca)', 'Barium (Ba)'],
+                            'halogen': ['Klor (Cl)', 'Brom (Br)', 'Iodin (I)'],
+                            'noble-gas': ['Helium (He)', 'Neon (Ne)', 'Argon (Ar)']
+                        };
+                        return Object.values(groups).some(group => 
+                            group.every(element => player.properties.includes(element))
+                        );
+                    }
+                },
+                {
+                    id: 'chemistry_genius',
+                    name: "Chemistry Genius",
+                    description: "Jawab 5 pertanyaan berturut-turut dengan benar",
+                    reward: 'contamination_shield',
+                    icon: '🎓',
+                    isUnlocked: false,
+                    correctAnswersStreak: 0
+                }
+            ]
+        };
+
+        // Power-up System Configuration
+        const powerUps = {
+            items: [
+                {
+                    id: 'lab_shield',
+                    name: "Lab Shield",
+                    description: "Proteksi lab dari kontaminasi selama 2 putaran",
+                    price: 100,
+                    icon: '🛡️',
+                    duration: 2,
+                    effect: (player) => {
+                        player.shields = (player.shields || 0) + 2;
+                    }
+                },
+                {
+                    id: 'double_dice',
+                    name: "Double Dice",
+                    description: "Lempar 2 dadu di putaran berikutnya",
+                    price: 150,
+                    icon: '🎲',
+                    duration: 1,
+                    effect: (player) => {
+                        player.doubleDice = true;
+                    }
+                },
+                {
+                    id: 'element_catalyst',
+                    name: "Element Catalyst",
+                    description: "Tingkatkan pendapatan sewa 2x lipat selama 1 putaran",
+                    price: 200,
+                    icon: '💫',
+                    duration: 1,
+                    effect: (player) => {
+                        player.rentMultiplier = 2;
+                    }
+                }
+            ]
+        };
+
+        // Achievement Management
+        function initializeAchievements() {
+            const container = document.getElementById('achievementsContainer');
+            achievements.list.forEach(achievement => {
+                const card = document.createElement('div');
+                card.className = `achievement-card ${achievement.isUnlocked ? 'unlocked' : ''}`;
+                card.id = `achievement-${achievement.id}`;
+                card.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-description">${achievement.description}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function checkAchievements(player) {
+            achievements.list.forEach(achievement => {
+                if (!achievement.isUnlocked && achievement.check && achievement.check(player)) {
+                    unlockAchievement(player, achievement);
+                }
+            });
+        }
+
+        function unlockAchievement(player, achievement) {
+            achievement.isUnlocked = true;
+            const card = document.getElementById(`achievement-${achievement.id}`);
+            card.classList.add('unlocked', 'achievement-unlock-animation');
+            
+            // Apply reward
+            if (typeof achievement.reward === 'number') {
+                player.money += achievement.reward;
+                showMessage(`🏆 ${player.name} mendapatkan Achievement "${achievement.name}" dan bonus ⚛${achievement.reward}!`);
+            } else {
+                handleSpecialReward(player, achievement.reward);
+            }
+            
+            updatePlayersInfo();
+        }
+
+        // Power-up Management
+        function initializePowerUps() {
+            const container = document.getElementById('powerUpsContainer');
+            powerUps.items.forEach(powerUp => {
+                const card = document.createElement('div');
+                card.className = 'power-up-card';
+                card.innerHTML = `
+                    <div class="power-up-icon">${powerUp.icon}</div>
+                    <div class="power-up-name">${powerUp.name}</div>
+                    <div class="power-up-description">${powerUp.description}</div>
+                    <div class="power-up-price">⚛${powerUp.price}</div>
+                    <button class="power-up-buy-btn" 
+                            onclick="buyPowerUp('${powerUp.id}')"
+                            id="buy-${powerUp.id}">
+                        Beli
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function buyPowerUp(powerUpId) {
+            const player = players[currentPlayerIndex];
+            const powerUp = powerUps.items.find(p => p.id === powerUpId);
+            
+            if (player.money >= powerUp.price) {
+                player.money -= powerUp.price;
+                powerUp.effect(player);
+                showMessage(`${player.name} membeli ${powerUp.name}!`);
+                updatePlayersInfo();
+                updatePowerUpButtons();
+            } else {
+                showMessage(`${player.name} tidak memiliki cukup Atom Coin untuk membeli ${powerUp.name}`);
+            }
+        }
+
+        function updatePowerUpButtons() {
+            const player = players[currentPlayerIndex];
+            powerUps.items.forEach(powerUp => {
+                const button = document.getElementById(`buy-${powerUp.id}`);
+                button.disabled = player.money < powerUp.price;
+            });
+        }
+
+        // Special reward handling
+        function handleSpecialReward(player, rewardType) {
+            switch(rewardType) {
+                case 'lab_discount':
+                    player.labDiscount = 0.5; // 50% discount
+                    showMessage(`🏆 ${player.name} mendapatkan diskon 50% untuk pembangunan lab berikutnya!`);
+                    break;
+                case 'contamination_shield':
+                    player.contaminationShield = true;
+                    showMessage(`🏆 ${player.name} mendapatkan perlindungan dari kontaminasi!`);
+                    break;
+            }
+        }
+
+        // Modify existing functions to incorporate new features
+        function initializeGame() {
+            initializeBoard();
+            createPlayerTokens();
+            updatePlayersInfo();
+            setupEventListeners();
+            initializeAchievements();
+            initializePowerUps();
+        }
+
+        // Modify handleDiceRoll to include double dice power-up
+        function handleDiceRoll() {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const player = players[currentPlayerIndex];
+            const rolls = player.doubleDice ? 2 : 1;
+            let totalSpaces = 0;
+
+            for (let i = 0; i < rolls; i++) {
+                const value = Math.floor(Math.random() * 6) + 1;
+                totalSpaces += value;
+                // Animasi dadu...
+            }
+
+            if (player.doubleDice) {
+                player.doubleDice = false;
+                showMessage(`${player.name} menggunakan Double Dice!`);
+            }
+
+            movePlayer(totalSpaces);
+        }
+
+        // Modify handlePropertyCell to include rent multiplier
+        function handlePropertyCell(cell) {
+            const player = players[currentPlayerIndex];
+            if (cell.owner && cell.owner !== player.id) {
+                const owner = players.find(p => p.id === cell.owner);
+                const hasLab = owner.labs?.includes(cell.name);
+                let rent = Math.floor(cell.value * 0.2);
+                
+                if (hasLab) rent *= LAB_RENT_MULTIPLIER;
+                if (player.rentMultiplier) {
+                    rent *= player.rentMultiplier;
+                    player.rentMultiplier = undefined;
+                }
+                
+                player.money -= rent;
+                owner.money += rent;
+                showMessage(`${player.name} membayar sewa ⚛${rent} kepada ${owner.name}`);
+                setTimeout(() => {
+                    finishTurn();
+                }, 2000);
+            }
+            // Rest of the function dimulai dari sini:
+            // Bagian kedua: Jika properti belum memiliki pemilik
+            else if (!cell.owner) {
+                if (player.money >= cell.value) {
+                    showBuyConfirmation(cell); // Tampilkan konfirmasi pembelian
+                } else {
+                    showMessage(`${player.name} tidak memiliki cukup Atom Coin untuk membeli ${cell.name}`);
+                    setTimeout(() => {
+                    finishTurn();
+                     }, 2000);
+                }
+            }
+            
+            // Bagian ketiga: Jika pemain adalah pemilik properti
+            else if (cell.owner === player.id) {
+                // Cek apakah bisa membangun lab
+                if (!player.labs || !player.labs.includes(cell.name)) {
+                    const buildLab = confirm(`Apakah Anda ingin membangun laboratorium di ${cell.name} seharga ⚛${LAB_COST}?`);
+                    if (buildLab) {
+                        handleLabPurchase(cell);
+                    } else {
+                        finishTurn();
+                    }
+                } else {
+                    showMessage("Sudah ada laboratorium di properti ini!");
+                    setTimeout(() => {
+                    finishTurn();
+                    }, 2000);
+                }
+            }
+
+            // Update tampilan dan cek achievements
+            updatePlayersInfo();
+            checkAchievements(player); 
+        }
+
+        // Game State
+        let players = [
+            { 
+                id: 1, 
+                name: "Pemain 1", 
+                position: 0, 
+                money: START_MONEY, 
+                properties: [],
+                labs: [],
+                color: '#e74c3c',
+                symbol: '🧪'
+            },
+            { 
+                id: 2, 
+                name: "Pemain 2", 
+                position: 0, 
+                money: START_MONEY, 
+                properties: [],
+                labs: [],
+                color: '#3498db',
+                symbol: '🔬'
+            }
+        ];
+
+        let currentPlayerIndex = 0;
+        let gameRound = 0;
+        let isProcessing = false;
+
+        // Tambahkan di awal file initialize game//
+        const DEBUG = true;
+        function debugLog(message) {
+            if (DEBUG) {
+                console.log(`[DEBUG] ${message}`);
+            }
+        }
+
+        // Gunakan dalam fungsi-fungsi
+        function initializeBoard() {
+            debugLog('Memulai inisialisasi papan');
+            // ... kode lainnya
+        }
+
+        //initialize Game//
+            function initializeGame() {
+            console.log('Initializing game...'); // Debug log
+            
+            // Reset game state
+            currentPlayerIndex = 0;
+            gameRound = 0;
+            isProcessing = false;
+
+            // Reset players
+            players.forEach(player => {
+                player.position = 0;
+                player.money = START_MONEY;
+                player.properties = [];
+                player.labs = [];
+                player.skipTurn = false;
+            });
+
+            // Initialize board and tokens
+            initializeBoard();
+            createPlayerTokens();
+            updateTokenPositions();
+            updatePlayersInfo();
+            setupEventListeners();
+
+            // Enable roll button for first player
+            const rollButton = document.getElementById('rollDice');
+            if (rollButton) {
+                rollButton.disabled = false;
+            }
+
+            console.log('Game initialized successfully'); // Debug log
+        }
+
+        // Panggil initializeGame saat halaman dimuat
+        window.onload = initializeGame
+
+        // Board Initialization
+            function initializeBoard() {
+            console.log('Inisialisasi papan permainan...');
+            const board = document.getElementById('board');
+            
+            // Bersihkan papan terlebih dahulu
+            board.innerHTML = '';
+            
+            // Buat sel-sel papan
+            boardData.cells.forEach((cell, index) => {
+                const cellElement = createCellElement(cell, index);
+                board.appendChild(cellElement);
+            });
+        }
+
+        // Create Cell Element
+            function createCellElement(cell, index) {
+            const cellElement = document.createElement('div');
+            cellElement.className = `cell ${cell.type}`;
+            
+            if (cell.type === 'alkali' || cell.type === 'alkaline-earth' || 
+                cell.type === 'halogen' || cell.type === 'noble-gas') {
+                const symbol = cell.name.match(/\(([^)]+)\)/)[1]; // Ekstrak simbol dari nama
+                cellElement.innerHTML = `
+                    <div class="cell-title">${cell.icon} ${cell.name}</div>
+                    ${cell.value ? `<div class="cell-price">⚛${cell.value}</div>` : ''}
+                    <button class="info-btn" onclick="showElementInfo('${symbol}')">ℹ️</button>
+                `;
+            } else {
+                cellElement.innerHTML = `
+                    <div class="cell-title">${cell.icon} ${cell.name}</div>
+                    ${cell.value ? `<div class="cell-price">⚛${cell.value}</div>` : ''}
+                `;
+            }
+            
+            cellElement.dataset.index = index;
+            return cellElement;
+        }
+
+                function showElementInfo(symbol) {
+            const info = chemistryLibrary.getElementInfo(symbol);
+            if (info) {
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        ${info}
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.style.display = 'block';
+                
+                modal.querySelector('.close').onclick = () => {
+                    modal.remove();
+                };
+            }
+        }
+        // Create Player Tokens
+           function createPlayerTokens() {
+            const container = document.getElementById('tokenContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            players.forEach((player) => {
+                const token = document.createElement('div');
+                token.className = 'player-token';
+                token.id = `token-${player.id}`;
+                token.style.cssText = `
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    background-color: ${player.color};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: bold;
+                    z-index: 100;
+                    cursor: pointer;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                    transition: all 0.3s ease;
+                `;
+                token.textContent = player.symbol;
+                
+                const posisiAwal = calculateTokenPosition(0, player.id);
+                token.style.left = `${posisiAwal.x}px`;
+                token.style.top = `${posisiAwal.y}px`;
+                
+                container.appendChild(token);
+            });
+        }
+        // Calculate Token Position //
+            function calculateTokenPosition(cellIndex, playerId) {
+            const boardSize = 4;
+            const cellSize = 800 / boardSize; // Ukuran sel berdasarkan ukuran papan
+            const playerOffset = (playerId - 1) * 20; // Offset antar pemain
+            
+            const row = Math.floor(cellIndex / boardSize);
+            const col = cellIndex % boardSize;
+
+            return {
+                x: (col * cellSize) + (cellSize/2) - 15 + playerOffset,
+                y: (row * cellSize) + (cellSize/2) - 15
+            };
+        }
+        
+        // log console //
+            function handleDiceRoll() {
+            console.log('Dadu dilempar');
+            if (isProcessing) {
+                console.log('Sedang dalam proses, tidak bisa melempar dadu');
+                return;
+            }
+            isProcessing = true;
+
+            const dice = document.getElementById('dice');
+            const rollButton = document.getElementById('rollDice');
+            rollButton.disabled = true;
+
+            console.log('Memulai animasi dadu');
+            // Sisa kode pelemparan dadu Anda...
+        }
+
+        // Player Movement Animation
+           function animatePlayerMovement(player, newPosition) {
+            const token = document.getElementById(`token-${player.id}`);
+            if (!token) {
+                console.error(`Token untuk pemain ${player.id} tidak ditemukan`);
+                return;
+            }
+
+            // Hitung posisi saat ini dan posisi baru
+            const posisiSekarang = calculateTokenPosition(player.position, player.id);
+            const posisiBaru = calculateTokenPosition(newPosition, player.id);
+
+            // Tambahkan animasi halus
+            token.style.transition = 'transform 0.5s ease-in-out';
+            
+            // Hitung perpindahan
+            const perpindahanX = posisiBaru.x - posisiSekarang.x;
+            const perpindahanY = posisiBaru.y - posisiSekarang.y;
+
+            // Terapkan transformasi untuk animasi halus
+            token.style.transform = `translate(${perpindahanX}px, ${perpindahanY}px)`;
+
+            // Perbarui posisi pemain setelah animasi selesai
+            setTimeout(() => {
+                token.style.transition = 'none';
+                token.style.transform = 'none';
+                token.style.left = `${posisiBaru.x}px`;
+                token.style.top = `${posisiBaru.y}px`;
+                
+                player.position = newPosition;
+                handleCellAction(boardData.cells[newPosition]);
+            }, 500);
+        }
+
+        // Calculate Movement Path
+        function calculatePath(start, end) {
+            const path = [];
+            let current = start;
+            while (current !== end) {
+                current = (current + 1) % BOARD_SIZE;
+                path.push(current);
+                if (current === 0 && current !== end) {
+                    // Passed Start
+                    const player = players[currentPlayerIndex];
+                    player.money += PASS_START_BONUS;
+                    showMessage(`${player.name} melewati Mulai dan mendapat ⚛${PASS_START_BONUS}!`);
+                }
+            }
+            return path;
+        }
+
+        // Handle Dice Roll
+           function handleDiceRoll() {
+            console.log('Handle dice roll for player:', currentPlayerIndex + 1); // Debug log
+            
+            if (isProcessing) {
+                console.log('Still processing previous turn'); // Debug log
+                return;
+            }
+            
+            isProcessing = true;
+            const dice = document.getElementById('dice');
+            const rollButton = document.getElementById('rollDice');
+            rollButton.disabled = true;
+
+            // Animate dice roll
+            let rolls = 0;
+            const maxRolls = 10;
+            const rollInterval = setInterval(() => {
+                const value = Math.floor(Math.random() * 6) + 1;
+                dice.textContent = getDiceFace(value);
+                rolls++;
+
+                if (rolls >= maxRolls) {
+                    clearInterval(rollInterval);
+                    const finalValue = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = getDiceFace(finalValue);
+                    
+                    console.log(`Player ${currentPlayerIndex + 1} rolled: ${finalValue}`); // Debug log
+                    movePlayer(finalValue);
+                }
+            }, 100);
+        }
+        
+        // Get Dice Face
+        function getDiceFace(value) {
+            const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            return faces[value - 1] || '⚀';
+        }
+
+        // Move Player //
+            function movePlayer(spaces) {
+            const player = players[currentPlayerIndex];
+            const path = calculatePath(player.position, (player.position + spaces) % BOARD_SIZE);
+            
+            let currentStep = 0;
+            
+            function animateStep() {
+                if (currentStep < path.length) {
+                    const nextPosition = path[currentStep];
+                    const token = document.getElementById(`token-${player.id}`);
+                    
+                    if (token) {
+                        // Tambahkan class untuk animasi lompatan
+                        token.classList.add('jumping');
+                        
+                        const newPos = calculateTokenPosition(nextPosition, player.id);
+                        token.style.left = `${newPos.x}px`;
+                        token.style.top = `${newPos.y}px`;
+                        
+                        // Hapus class jumping setelah animasi selesai
+                        setTimeout(() => {
+                            token.classList.remove('jumping');
+                            currentStep++;
+                            
+                            // Jika melewati start, tambahkan bonus
+                            if (nextPosition === 0 && currentStep < path.length) {
+                                player.money += PASS_START_BONUS;
+                                showMessage(`${player.name} melewati Mulai dan mendapat ⚛${PASS_START_BONUS}!`);
+                                updatePlayersInfo();
+                            }
+                            
+                            animateStep();
+                        }, 500); // Waktu untuk satu lompatan
+                    }
+                } else {
+                    // Animasi selesai, update posisi final dan handle aksi sel
+                    player.position = (player.position + spaces) % BOARD_SIZE;
+                    handleCellAction(boardData.cells[player.position]);
+                }
+            }
+            
+            animateStep();
+        }
+
+        function calculatePath(start, end) {
+            const path = [];
+            let current = start;
+            
+            // Hitung path dengan mempertimbangkan pergerakan memutar papan
+            while (current !== end) {
+                current = (current + 1) % BOARD_SIZE;
+                path.push(current);
+            }
+            
+            return path;
+        }
+
+        // animate Player Movement //
+            function animatePlayerMovement(player, newPosition) {
+            console.log(`Animating player ${player.id} movement to position ${newPosition}`); // Debug log
+            
+            const token = document.getElementById(`token-${player.id}`);
+            if (!token) {
+                console.error(`Token not found for player ${player.id}`); // Debug log
+                return;
+            }
+
+            // Calculate new position
+            const position = calculateTokenPosition(newPosition, player.id);
+            console.log(`Calculated position:`, position); // Debug log
+
+            // Add moving class for animation
+            token.classList.add('moving');
+
+            // Update token position
+            token.style.left = `${position.x}px`;
+            token.style.top = `${position.y}px`;
+
+            // Wait for animation to complete
+            setTimeout(() => {
+                token.classList.remove('moving');
+                player.position = newPosition;
+                console.log(`Player ${player.id} movement complete`); // Debug log
+                
+                // Handle cell action after movement completes
+                handleCellAction(boardData.cells[newPosition]);
+            }, 300);
+        }
+
+        // PERBAIKAN: Fungsi updateTokenPositions yang benar
+            function updateTokenPositions() {
+            players.forEach((player) => {
+                const token = document.getElementById(`token-${player.id}`);
+                if (token) {
+                    const position = calculateTokenPosition(player.position, player.id);
+                    token.style.left = position.x + 'px';
+                    token.style.top = position.y + 'px';
+                    token.style.transform = 'translate(0, 0)';
+                }
+            });
+        }
+
+        // Handle Cell Action
+        function handleCellAction(cell) {
+            const player = players[currentPlayerIndex];
+
+            switch(cell.type) {
+                case 'alkali':
+                case 'alkaline-earth':
+                case 'halogen':
+                case 'noble-gas':
+                    handlePropertyCell(cell);
+                    break;
+                case 'contamination':
+                    handleContamination();
+                    break;
+                case 'reaction':
+                    handleReaction();
+                    break;
+                case 'start':
+                    finishTurn();
+                    break;
+            }
+        }
+
+        // Handle Property Cell
+            function handlePropertyCell(cell) {
+            const player = players[currentPlayerIndex];
+            
+            if (!cell.owner) {
+                if (player.money >= cell.value) {
+                    showBuyConfirmation(cell);
+                } else {
+                    showMessage(`${player.name} tidak memiliki cukup Atom Coin untuk membeli ${cell.name}`);
+                    finishTurn();
+                }
+            } else if (cell.owner === player.id) {
+                // Tambahkan opsi untuk membangun lab
+                if (!player.labs || !player.labs.includes(cell.name)) {
+                    const buildLab = confirm(`Apakah Anda ingin membangun laboratorium di ${cell.name} seharga ⚛${LAB_COST}?`);
+                    if (buildLab) {
+                        handleLabPurchase(cell);
+                    } else {
+                        finishTurn();
+                    }
+                } else {
+                    showMessage("Sudah ada laboratorium di properti ini!");
+                    finishTurn();
+                }
+            } else {
+                // Hitung sewa dengan mempertimbangkan lab
+                const hasLab = players.find(p => p.id === cell.owner).labs?.includes(cell.name);
+                const baseRent = Math.floor(cell.value * 0.2);
+                const rent = hasLab ? baseRent * LAB_RENT_MULTIPLIER : baseRent;
+                
+                player.money -= rent;
+                players.find(p => p.id === cell.owner).money += rent;
+                showMessage(`${player.name} membayar sewa ⚛${rent} kepada ${players.find(p => p.id === cell.owner).name}${hasLab ? ' (termasuk biaya lab)' : ''}`);
+                finishTurn();
+            }
+        }
+
+        // Show buys confirmations//
+            function showBuyConfirmation(cell) {
+            const modal = document.getElementById('buyConfirmModal');
+            const text = document.getElementById('buyConfirmText');
+            text.textContent = `Apakah Anda ingin membeli ${cell.name} seharga ⚛${cell.value}?`;
+            modal.style.display = 'block';
+            
+            window.confirmBuy = function(choice) {
+                modal.style.display = 'none';
+                if (choice) {
+                    showQuestion('buy', () => {
+                        const player = players[currentPlayerIndex];
+                        cell.owner = player.id;
+                        player.money -= cell.value;
+                        player.properties.push(cell.name);
+                        showMessage(`${player.name} membeli ${cell.name} seharga ⚛${cell.value}`);
+                        finishTurn();
+                    }, () => {
+                        showMessage(`${player.name} gagal menjawab pertanyaan dan tidak dapat membeli ${cell.name}`);
+                        setTimeout (() => {
+                        finishTurn();
+                        }, 2000);
+                    });
+                } else {
+                    // Perbaikan disini - pastikan memanggil finishTurn()
+                    const player = players[currentPlayerIndex];
+                    showMessage(`${player.name} memilih untuk tidak membeli ${cell.name}`);
+                    finishTurn();
+                }
+            };
+        }
+
+         // Tambahkan handler untuk tombol close
+                const closeButton = modal.querySelector('.close');
+                if (closeButton) {
+                    closeButton.onclick = function() {
+                        modal.style.display = 'none';
+                        if (typeof onFailure === 'function') {
+                            onFailure();
+                        }
+                    };
+                }
+
+            // Tambahkan handler untuk klik di luar modal
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    if (typeof onFailure === 'function') {
+                        onFailure();
+                    }
+                }
+            };
+
+        // Handle Contamination
+                function handleContamination() {
+                    showQuestion('contamination', 
+                        () => {
+                            showMessage('Berhasil menghindari kontaminasi!');
+                            finishTurn();
+                        },
+                        () => {
+                            const player = players[currentPlayerIndex];
+                            player.skipTurn = true;
+                            showMessage(`${player.name} terkontaminasi dan melewatkan 1 putaran!`);
+                            finishTurn();
+                        }
+                    );
+                }
+
+        // Handle Reaction
+            function handleReaction() {
+            const reaction = Math.random() > 0.5;
+            const amount = Math.floor(Math.random() * 50) + 10;
+            const player = players[currentPlayerIndex];
+
+            if (reaction) {
+                player.money += amount;
+                showMessage(`Reaksi berhasil! ${player.name} mendapat ⚛${amount}`);
+            } else {
+                player.money -= amount;
+                showMessage(`Reaksi gagal! ${player.name} kehilangan ⚛${amount}`);
+            }
+            finishTurn();
+        }
+
+        // modal konfirmasi pembelian 
+            function setupEventListeners() {
+            // Event listeners yang sudah ada
+            document.getElementById('rollDice').addEventListener('click', handleDiceRoll);
+            
+            document.querySelector('.close').onclick = function() {
+                document.getElementById('questionModal').style.display = 'none';
+            }
+
+            // Tambahkan event listener untuk modal konfirmasi pembelian
+                window.onclick = function(event) {
+                const questionModal = document.getElementById('questionModal');
+                const buyConfirmModal = document.getElementById('buyConfirmModal');
+                
+                if (event.target === questionModal) {
+                    questionModal.style.display = 'none';
+                }
+                if (event.target === buyConfirmModal) {
+                    buyConfirmModal.style.display = 'none';
+                }
+            }
+        }
+
+        // Show Message
+            function showMessage(message) {
+            const messageContainer = document.createElement('div');
+            messageContainer.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                z-index: 1000;
+                text-align: center;
+                min-width: 300px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            `;
+            messageContainer.textContent = message;
+            document.body.appendChild(messageContainer);
+            
+            setTimeout(() => {
+                messageContainer.remove();
+            }, 2000);
+        }
+
+        // Finish Turn
+            function finishTurn() {
+            isProcessing = false;
+            console.log('Finishing turn for player:', currentPlayerIndex + 1); // Debug log
+
+            // Update game state first
+            updatePlayersInfo();
+            updateTokenPositions();
+
+            // Advance to next player
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            console.log('Next player will be:', currentPlayerIndex + 1); // Debug log
+
+            // Update round counter if we've gone through all players
+            if (currentPlayerIndex === 0) {
+                gameRound++;
+                console.log('New round:', gameRound); // Debug log
+            }
+
+            // Check for game end
+            if (gameRound >= MAX_ROUNDS) {
+                endGame();
+                return;
+            }
+
+            // Handle contaminated player
+            if (players[currentPlayerIndex].skipTurn) {
+                console.log(`Player ${currentPlayerIndex + 1} is skipping turn`); // Debug log
+                players[currentPlayerIndex].skipTurn = false;
+                showMessage(`${players[currentPlayerIndex].name} melewatkan giliran karena terkontaminasi!`);
+                setTimeout(() => finishTurn(), 1000); // Give time for message to show
+                return;
+            }
+
+            // Enable roll button and update UI for next player
+            const rollButton = document.getElementById('rollDice');
+            if (rollButton) {
+                rollButton.disabled = false;
+                console.log('Roll button enabled for next player'); // Debug log
+            }
+
+            // Final UI update
+            updatePlayersInfo();
+        }
+
+        // Update Players Info
+            function updatePlayersInfo() {
+            const playersDiv = document.getElementById('players');
+            playersDiv.innerHTML = players.map((player, index) => `
+                <div class="player-info ${index === currentPlayerIndex ? 'current-player' : ''}"
+                    style="border-left: 5px solid ${player.color}">
+                    <div class="player-header">
+                        <div class="player-avatar" style="background-color: ${player.color}">
+                            ${player.symbol}
+                        </div>
+                        <h3>${player.name} ${index === currentPlayerIndex ? '(Giliran)' : ''}</h3>
+                    </div>
+                    <div class="player-stats">
+                        <div class="stat-item">⚛${player.money}</div>
+                        <div class="stat-item">${boardData.cells[player.position].name}</div>
+                    </div>
+                    <div class="property-list">
+                        ${player.properties.map(prop => `
+                            <div class="property-card">
+                                ${prop}
+                                ${player.labs?.includes(prop) ? ' 🧪' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update power-up buttons
+            updatePowerUpButtons(); {
+            // Check for achievements
+            checkAchievements(players[currentPlayerIndex]);
+        }
+        
+        // End Game
+        function endGame() {
+            const winner = players.reduce((prev, current) => 
+                (prev.money > current.money) ? prev : current
+            );
+            
+            showMessage(`Permainan Selesai!\n${winner.name} menang dengan ⚛${winner.money}!`);
+            
+            // Disable controls
+            document.getElementById('rollDice').disabled = true;
+            
+            // You might want to add a restart game button here
+            if (confirm('Mulai permainan baru?')) {
+                location.reload();
+            }
+        }
+
+        // Setup Event Listeners // 
+            function setupEventListeners() {
+            // Setup roll button
+            const rollButton = document.getElementById('rollDice');
+            if (rollButton) {
+                rollButton.onclick = handleDiceRoll;
+            }
+
+            // Setup modal question close button
+                const closeQuestionBtn = document.getElementById('closeQuestion');
+            if (closeQuestionBtn) {
+                closeQuestionBtn.onclick = function() {
+                    const modal = document.getElementById('questionModal');
+                    modal.style.display = 'none';
+                    finishTurn(); // Pastikan giliran selesai saat modal ditutup
+                };
+            }
+
+            // Setup modal question outside click
+                window.onclick = function(event) {
+                const questionModal = document.getElementById('questionModal');
+                const buyConfirmModal = document.getElementById('buyConfirmModal');
+                
+                if (event.target === questionModal || event.target === buyConfirmModal) {
+                    event.target.style.display = 'none';
+                    finishTurn(); // Pastikan giliran selesai saat modal ditutup
+                }
+            };
+        }
+
+        // Show Question //
+            function showQuestion(type, onSuccess, onFailure) {
+            const modal = document.getElementById('questionModal');
+            const questionSet = questions[type];
+            const question = questionSet[Math.floor(Math.random() * questionSet.length)];
+            
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('answerInput').value = '';
+            modal.style.display = 'block';
+
+            // Simpan callback untuk digunakan nanti
+            window._questionCallbacks = {
+                success: onSuccess,
+                failure: onFailure
+            };
+
+            window.checkAnswer = function() {
+                const answer = document.getElementById('answerInput').value.toLowerCase();
+                const correctAnswer = question.answer.toLowerCase();
+                
+                modal.style.display = 'none';
+                
+                if (answer === correctAnswer) {
+                    showMessage('Jawaban benar!');
+                    if (typeof window._questionCallbacks.success === 'function') {
+                        window._questionCallbacks.success();
+                    }
+                } else {
+                    showMessage('Jawaban salah!');
+                    if (typeof window._questionCallbacks.failure === 'function') {
+                        window._questionCallbacks.failure();
+                    }
+                }
+            };
+        }
+
+        function calculateTokenPosition(cellIndex, playerId) {
+            const boardSize = 4;
+            const cellSize = 800 / boardSize;
+            const offset = (playerId - 1) * 15;
+            
+            const row = Math.floor(cellIndex / boardSize);
+            const col = cellIndex % boardSize;
+            
+            return {
+                x: (col * cellSize) + cellSize/2 - 15 + offset,
+                y: (row * cellSize) + cellSize/2 - 15
+            };
+        }
+                window.addEventListener('resize', () => {
+            players.forEach((player) => {
+                const position = calculateTokenPosition(player.position, player.id);
+                const token = document.getElementById(`token-${player.id}`);
+                if (token) {
+                    token.style.left = `${position.x}px`;
+                    token.style.top = `${position.y}px`;
+                }
+            });
+        });
+
+        // Initialize game when page loads
+            function initializeGame() {
+            console.log('Game sedang diinisialisasi...');
+            initializeBoard();
+            createPlayerTokens();
+            updatePlayersInfo();
+            setupEventListeners();
+            initializeAchievements();
+            initializePowerUps();
+            
+            // Reset posisi pemain
+            players.forEach(player => {
+                player.position = 0;
+                const token = document.getElementById(`token-${player.id}`);
+                if (token) {
+                    const position = calculateTokenPosition(0, player.id);
+                    token.style.left = `${position.x}px`;
+                    token.style.top = `${position.y}px`;
+                }
+            });
+        }
+
+        // Ubah window.onload menjadi:
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeGame();
+        });
+
+        // Penanganan Eror //
+            window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.log('Error: ' + msg);
+            console.log('URL: ' + url);
+            console.log('Baris: ' + lineNo);
+            console.log('Kolom: ' + columnNo);
+            console.log('Objek Error: ' + JSON.stringify(error));
+            return false;
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pastikan tombol dadu ada
+            const rollButton = document.querySelector('.roll-button');
+            const dice = document.querySelector('.dice');
+            
+            if (rollButton && dice) {
+                console.log('Tombol dadu ditemukan');
+                
+                // Hapus event listener lama jika ada
+                rollButton.replaceWith(rollButton.cloneNode(true));
+                
+                // Tambahkan event listener baru
+                document.querySelector('.roll-button').addEventListener('click', function() {
+                    console.log('Tombol dadu diklik');
+                    
+                    // Animasi dadu
+                    dice.classList.add('rolling');
+                    
+                    // Generate angka random
+                    const randomNumber = Math.floor(Math.random() * 6) + 1;
+                    
+                    // Update tampilan dadu setelah animasi
+                    setTimeout(() => {
+                        dice.classList.remove('rolling');
+                        dice.textContent = getDiceFace(randomNumber);
+                        
+                        // Gerakkan pemain
+                        const player = players[currentPlayerIndex];
+                        movePlayer(randomNumber);
+                    }, 1000);
+                });
+            } else {
+                console.error('Tombol dadu atau dadu tidak ditemukan!');
+            }
+        });
+
+        // Tambahkan CSS untuk animasi
+        const style = document.createElement('style');
+        style.textContent = `
+            .rolling {
+                animation: roll 0.5s linear infinite;
+            }
+
+            @keyframes roll {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            .roll-button {
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+            .roll-button:hover {
+                background-color: #45a049;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
